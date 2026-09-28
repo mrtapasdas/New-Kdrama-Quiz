@@ -1,6 +1,5 @@
 async function requireAdmin(){
-  const gateLoading = document.getElementById('adminGateLoading');
-  const shell = document.getElementById('adminShell');
+  const gate = document.getElementById('adminGate');
   const session = await getSession();
 
   if(!session){
@@ -12,9 +11,7 @@ async function requireAdmin(){
     return null;
   }
 
-  // Access confirmed — reveal the dashboard now
-  if(gateLoading) gateLoading.style.display = 'none';
-  if(shell) shell.classList.add('ready');
+  if(gate) gate.classList.add('hidden');
   return session;
 }
 
