@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz Creation | Admin | NEW K-DRAMA Quiz</title>
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="../images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +40,7 @@
       <div class="form-group"><label>Quiz Title</label><input type="text" id="qTitle" required></div>
       <div class="form-group"><label>Category</label><input type="text" id="qCategory" placeholder="e.g. Romance, Thriller, Fantasy" required></div>
       <div class="form-group"><label>Difficulty</label>
-        <select id="qDifficulty" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px">
+        <select id="qDifficulty" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)">
           <option>Easy</option><option selected>Medium</option><option>Hard</option>
         </select>
       </div>
@@ -75,8 +76,6 @@
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
 <script>
-let EDIT_MODE = false;
-
 document.addEventListener('DOMContentLoaded', async ()=>{
   await seedDatabase();
   requireAdmin();
@@ -106,7 +105,6 @@ function renderQuizList(){
 }
 
 function openEditor(quiz=null){
-  EDIT_MODE = !!quiz;
   document.getElementById('editorCard').style.display = 'block';
   document.getElementById('editorTitle').textContent = quiz ? 'Edit Quiz' : 'Create Quiz';
   document.getElementById('editQuizId').value = quiz ? quiz.id : '';
