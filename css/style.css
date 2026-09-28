@@ -321,10 +321,6 @@ canvas{max-width:100%}
   .mobile-admin-toggle{display:inline-flex}
 }
 @media (max-width:760px){
-  .main-nav{position:fixed;top:64px;left:0;right:0;background:#000;flex-direction:column;padding:20px;gap:18px;
-    border-bottom:1px solid var(--border);display:none;box-shadow:var(--shadow)}
-  .main-nav.open{display:flex}
-  .nav-toggle{display:flex}
   .hero{padding:60px 16px 70px}
   .hero-stats{gap:24px}
   .footer-grid{grid-template-columns:1fr}
