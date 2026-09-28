@@ -12,6 +12,7 @@
 <meta property="og:url" content="https://quiz.newkdrama.com/">
 <meta property="og:image" content="https://quiz.newkdrama.com/images/logo.png">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,48 +26,35 @@
   "potentialAction":{"@type":"SearchAction","target":"https://quiz.newkdrama.com/?q={search_term}","query-input":"required name=search_term"}
 }
 </script>
-<!-- Google AdSense (replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID after approval) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="logo"><img src="images/logo.png" alt="NEW K-DRAMA logo"></a>
-    <nav class="main-nav" id="mainNav">
-      <a href="index.html" class="active">Home</a>
-      <a href="index.html#quizzes">Quizzes</a>
-      <a href="index.html#instructions">Instructions</a>
-      <a href="index.html#footer">Contact</a>
-    </nav>
-    <div class="header-actions" id="headerAuthArea"></div>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  </div>
-</header>
+<div id="site-header"></div>
 
 <main>
   <section class="hero">
-  <div class="hero-korean-bg" aria-hidden="true">
-    <span>사랑</span><span>드라마</span><span>운명</span><span>첫사랑</span>
-    <span>청춘</span><span>추억</span><span>로맨스</span><span>인생</span>
-    <span>우정</span><span>도전</span><span>설렘</span><span>비밀</span>
-    <span>한국 드라마</span><span>재회</span><span>고백</span><span>기억</span>
-  </div>
-  <div class="hero-content">
-    <span class="hero-badge">✨ Free K-Drama Trivia</span>
-    <h1>How Well Do You Really Know K-Dramas?</h1>
-    <p>Play bite-sized quizzes on your favorite Korean dramas, climb the leaderboard, and prove you're the ultimate fan.</p>
-    <div class="hero-actions">
-      <a href="#quizzes" class="btn btn-accent">Browse Quizzes</a>
-      <a href="#instructions" class="btn btn-outline" style="border-color:var(--accent);color:var(--accent)">How It Works</a>
+    <div class="hero-korean-bg" aria-hidden="true">
+      <span>사랑</span><span>드라마</span><span>운명</span><span>첫사랑</span>
+      <span>청춘</span><span>추억</span><span>로맨스</span><span>인생</span>
+      <span>우정</span><span>도전</span><span>설렘</span><span>비밀</span>
+      <span>한국 드라마</span><span>재회</span><span>고백</span><span>기억</span>
     </div>
-    <div class="hero-stats">
-      <div class="hero-stat"><b id="statQuizzes">0</b><span>Quizzes</span></div>
-      <div class="hero-stat"><b id="statPlayers">0</b><span>Players</span></div>
-      <div class="hero-stat"><b id="statCategories">0</b><span>Categories</span></div>
+    <div class="hero-content">
+      <span class="hero-badge">✨ Free K-Drama Trivia</span>
+      <h1>How Well Do You Really Know K-Dramas?</h1>
+      <p>Play bite-sized quizzes on your favorite Korean dramas, climb the leaderboard, and prove you're the ultimate fan.</p>
+      <div class="hero-actions">
+        <a href="#quizzes" class="btn btn-primary">Browse Quizzes</a>
+        <a href="#instructions" class="btn btn-outline">How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="statQuizzes">0</b><span>Quizzes</span></div>
+        <div class="hero-stat"><b id="statPlayers">0</b><span>Players</span></div>
+        <div class="hero-stat"><b id="statCategories">0</b><span>Categories</span></div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
   <div class="ad-slot">
     <span class="ad-label">Advertisement</span>
@@ -86,7 +74,7 @@
     </div>
   </section>
 
-  <section class="section" id="instructions" style="background:#fff">
+  <section class="section section-alt" id="instructions">
     <div class="container">
       <div class="section-head">
         <span class="tag">Instructions</span>
@@ -109,36 +97,11 @@
   </div>
 </main>
 
-<footer class="site-footer" id="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <div class="footer-logo"><img src="images/logo.png" alt="NEW K-DRAMA"></div>
-        <p>Free K-drama trivia quizzes for fans, by fans. Play, compete, and celebrate your favorite dramas.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Explore</h4>
-        <a href="index.html">Home</a>
-        <a href="index.html#quizzes">Quizzes</a>
-        <a href="index.html#instructions">Instructions</a>
-      </div>
-      <div class="footer-col">
-        <h4>Account</h4>
-        <a href="login.html">Log In</a>
-        <a href="login.html?mode=signup">Sign Up</a>
-      </div>
-      <div class="footer-col">
-        <h4>More</h4>
-        <a href="https://newkdrama.com" target="_blank" rel="noopener">NewKDrama.com</a>
-        <a href="admin/index.html">Admin</a>
-      </div>
-    </div>
-    <div class="footer-bottom">© <span id="year"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
-  </div>
-</footer>
+<div id="site-footer"></div>
 
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
