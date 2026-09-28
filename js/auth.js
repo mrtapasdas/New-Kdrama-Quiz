@@ -21,7 +21,11 @@ async function loginUser({email,password}){
   return user;
 }
 
-function logoutUser(){ DB.clearSession(); window.location.href='index.html'; }
+function logoutUser(){
+  DB.clearSession();
+  const depth = location.pathname.includes('/admin/') ? '../' : '';
+  window.location.href = depth + 'index.html';
+}
 
 function getSession(){ return DB.session(); }
 
@@ -30,11 +34,11 @@ function getCurrentUser(){
   return DB.users().find(u=>u.id===s.userId) || null;
 }
 
-/* Renders header auth area on public pages. Call on DOMContentLoaded. */
+/* Renders the auth area (login/signup buttons OR user chip) inside the header.
+   Called automatically by layout.js — you shouldn't need to call this directly. */
 function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
   const el = document.querySelector(rootSelector);
   if(!el) return;
-
   try{
     const s = getSession();
     if(!s){
@@ -59,4 +63,3 @@ function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
       <a href="${pathPrefix}login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>`;
   }
 }
-
