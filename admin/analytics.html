@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analytics | Admin | NEW K-DRAMA Quiz</title>
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="../images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
 
-  drawBarChart('categoryChart', Object.keys(catCounts), Object.values(catCounts), '#6b2737');
+  drawBarChart('categoryChart', Object.keys(catCounts), Object.values(catCounts));
 
   const buckets = {'0-50':0,'51-100':0,'101-150':0,'151-200':0,'200+':0};
   scores.forEach(s=>{
@@ -91,18 +92,19 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     else if(s.score<=200) buckets['151-200']++;
     else buckets['200+']++;
   });
-  drawBarChart('scoreChart', Object.keys(buckets), Object.values(buckets), '#c9a961');
+  drawBarChart('scoreChart', Object.keys(buckets), Object.values(buckets));
 
   const days = [...Array(14)].map((_,i)=>{
     const d = new Date(); d.setDate(d.getDate()-(13-i));
     return d.toISOString().slice(0,10);
   });
   const signupCounts = days.map(day => users.filter(u=>u.joined.slice(0,10)===day).length);
-  drawBarChart('signupChart', days.map(d=>d.slice(5)), signupCounts, '#2e7d4f');
+  drawBarChart('signupChart', days.map(d=>d.slice(5)), signupCounts);
 });
 
-/* Lightweight canvas bar chart — no external chart library needed */
-function drawBarChart(canvasId, labels, values, color){
+/* Lightweight canvas bar chart — no external chart library needed.
+   Uses the theme's gold accent color for all bars for visual consistency. */
+function drawBarChart(canvasId, labels, values){
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
@@ -117,19 +119,20 @@ function drawBarChart(canvasId, labels, values, color){
   const gap = (w - padding*2) / (labels.length || 1);
 
   ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle = '#e8e0d4'; ctx.beginPath();
+  ctx.strokeStyle = '#2c2620'; ctx.beginPath();
   ctx.moveTo(padding, h-30); ctx.lineTo(w-10, h-30); ctx.stroke();
 
   labels.forEach((label,i)=>{
     const barHeight = ((values[i]/max) * (h-70));
     const x = padding + i*gap + (gap-barWidth)/2;
     const y = h-30-barHeight;
-    ctx.fillStyle = color;
+    ctx.fillStyle = '#d4af37';
     ctx.fillRect(x, y, barWidth, barHeight);
-    ctx.fillStyle = '#2b2320';
+    ctx.fillStyle = '#f2ece0';
     ctx.font = '11px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(String(values[i]), x+barWidth/2, y-6);
+    ctx.fillStyle = '#a89f8e';
     ctx.fillText(label.length>8?label.slice(0,8)+'…':label, x+barWidth/2, h-14);
   });
 }
