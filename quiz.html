@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Play Quiz | NEW K-DRAMA Quiz</title>
+<meta name="description" content="Play this K-drama quiz, beat the timer, and see if you make the Top 10 leaderboard.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="images/favicon.ico">
+<link rel="stylesheet" href="css/style.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="logo"><img src="images/logo.png" alt="NEW K-DRAMA logo"></a>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="index.html#quizzes">Quizzes</a>
+    </nav>
+    <div class="header-actions" id="headerAuthArea"></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main class="quiz-shell">
+
+  <!-- START SCREEN -->
+  <section class="quiz-panel" id="startScreen">
+    <span class="tag cat-tag" id="startCategory"></span>
+    <h1 id="startTitle"></h1>
+    <p class="quiz-desc" id="startDesc"></p>
+    <div class="quiz-info-row">
+      <div><b id="startQCount"></b><span>Questions</span></div>
+      <div><b id="startTime"></b><span>Sec/Question</span></div>
+      <div><b id="startDiff"></b><span>Difficulty</span></div>
+    </div>
+
+    <div class="leaderboard">
+      <h3>🏆 Top 10 Leaderboard</h3>
+      <div class="leaderboard-list" id="startLeaderboard"></div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="startBtn">Start Quiz</button>
+  </section>
+
+  <div class="ad-slot" id="startAd">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="4444444444" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- PLAY SCREEN -->
+  <section class="quiz-panel" id="playScreen" style="display:none;text-align:left">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="q-count" id="qCount"></p>
+    <div style="text-align:center"><span class="timer-badge" id="timerBadge">⏱ 20s</span></div>
+    <p class="question-text" id="questionText"></p>
+    <div class="options-grid" id="optionsGrid"></div>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section class="quiz-panel" id="resultScreen" style="display:none">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <h1>Quiz Complete!</h1>
+    <div class="result-score" id="resultScore">0 / 0</div>
+    <p class="quiz-desc" id="resultMsg"></p>
+
+    <div class="leaderboard">
+      <h3>🏆 Top 10 Leaderboard</h3>
+      <div class="leaderboard-list" id="resultLeaderboard"></div>
+      <div class="your-rank-banner" id="yourRankBanner" style="display:none"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-outline" id="retryBtn">Retry Quiz</button>
+      <a href="index.html" class="btn btn-primary">More Quizzes</a>
+    </div>
+  </section>
+
+  <div class="ad-slot" id="resultAd" style="display:none">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="5555555555" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-bottom">© <span id="year"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
+</footer>
+
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/quiz.js"></script>
+</body>
+</html>
