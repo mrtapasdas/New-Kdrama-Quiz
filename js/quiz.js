@@ -58,6 +58,7 @@ function startQuiz(){
   document.getElementById('startScreen').style.display='none';
   document.getElementById('startAd').style.display='none';
   document.getElementById('playScreen').style.display='block';
+  document.getElementById('playAd').style.display='block';   // ← added
   CURRENT_INDEX = 0; SCORE = 0; TIME_TAKEN = 0;
   loadQuestion();
 }
@@ -117,6 +118,7 @@ function selectAnswer(index){
 function finishQuiz(){
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('playScreen').style.display='none';
+  document.getElementById('playAd').style.display='none';    // ← added
   document.getElementById('resultScreen').style.display='block';
   document.getElementById('resultAd').style.display='block';
 
