@@ -66,13 +66,13 @@
 <script src="../js/admin.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async ()=>{
-  await seedDatabase();
-  requireAdmin();
-  initAdminChrome();
+  const session = await requireAdmin();
+  if(!session) return;
+  initAdminChrome(session);
+  const quizzes = await DB.getQuizzes();   // instead of DB.quizzes()
+  const scores  = await DB.getAllScores(); // instead of DB.scores()
+  const users   = await DB.getUsers();     // instead of DB.users()
 
-  const quizzes = DB.quizzes();
-  const scores = DB.scores();
-  const users = DB.users();
 
   document.getElementById('anTotalPlays').textContent = scores.length;
   document.getElementById('anUniquePlayers').textContent = new Set(scores.map(s=>s.userId)).size;
