@@ -84,23 +84,62 @@ function getSession(){
 function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
   const el = document.querySelector(rootSelector);
   if(!el) return;
-  getSession().then(s=>{
-    if(!s){
-      el.innerHTML = `
-        <a href="${pathPrefix}login.html" class="btn btn-outline btn-sm">Log In</a>
-        <a href="${pathPrefix}login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>`;
-      return;
-    }
-    const initial = s.name ? s.name.charAt(0).toUpperCase() : 'U';
-    el.innerHTML = `
-  <div class="user-chip"><div class="avatar">${initial}</div><span class="user-name">${escapeHtml(s.name)}</span></div>
-  ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm admin-btn">Admin</a>` : ''}
-  <button class="btn btn-ghost btn-sm logout-btn" id="logoutBtn">Log Out</button>`;
-    document.getElementById('logoutBtn')?.addEventListener('click', logoutUser);
-  }).catch(err=>{
-    console.error('renderHeaderAuth failed:', err);
+
+  const renderLoggedOut = ()=>{
     el.innerHTML = `
       <a href="${pathPrefix}login.html" class="btn btn-outline btn-sm">Log In</a>
       <a href="${pathPrefix}login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>`;
+    // On very small screens the Sign Up button moves into the hamburger menu (see style.css).
+    const nav = document.getElementById('mainNav');
+    if(nav && !nav.querySelector('.nav-auth')){
+      nav.insertAdjacentHTML('beforeend', `<a href="${pathPrefix}login.html?mode=signup" class="nav-auth">Sign Up</a>`);
+    }
+  };
+
+  getSession().then(s=>{
+    if(!s){ renderLoggedOut(); return; }
+    const name = escapeHtml(s.name || 'User');
+    const initial = escapeHtml(s.name ? s.name.charAt(0).toUpperCase() : 'U');
+    const adminHref = `${pathPrefix}admin/index.html`;
+    el.innerHTML = `
+      <div class="user-menu">
+        <button type="button" class="user-chip" id="userChip" aria-haspopup="true" aria-expanded="false" aria-controls="userPopover" aria-label="Account menu for ${name}">
+          <span class="avatar">${initial}</span><span class="user-name">${name}</span>
+        </button>
+        <div class="user-popover" id="userPopover">
+          <div class="up-name">${name}</div>
+          ${s.isAdmin ? `<a href="${adminHref}" class="up-link">⚙ Admin</a>` : ''}
+          <button type="button" class="up-link" data-logout>🚪 Log Out</button>
+        </div>
+      </div>
+      ${s.isAdmin ? `<a href="${adminHref}" class="btn btn-outline btn-sm admin-btn">Admin</a>` : ''}
+      <button type="button" class="btn btn-ghost btn-sm logout-btn" data-logout>Log Out</button>`;
+
+    el.querySelectorAll('[data-logout]').forEach(b=>b.addEventListener('click', logoutUser));
+    setupUserMenu();
+  }).catch(err=>{
+    console.error('renderHeaderAuth failed:', err);
+    renderLoggedOut();
   });
+}
+
+/* Phones: tapping the avatar toggles a small menu that shows the user's name (plus Admin / Log Out). */
+function setupUserMenu(){
+  const chip = document.getElementById('userChip');
+  const pop  = document.getElementById('userPopover');
+  if(!chip || !pop) return;
+
+  const close = ()=>{ pop.classList.remove('open'); chip.setAttribute('aria-expanded','false'); };
+
+  chip.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    chip.setAttribute('aria-expanded', String(open));
+    if(open){                                   // never show the nav menu and the avatar menu together
+      document.getElementById('mainNav')?.classList.remove('open');
+      document.getElementById('navToggle')?.setAttribute('aria-expanded','false');
+    }
+  });
+  document.addEventListener('click', e=>{ if(!pop.contains(e.target)) close(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
 }

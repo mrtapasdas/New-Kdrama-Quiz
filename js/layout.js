@@ -20,15 +20,24 @@ function renderLayout(pathPrefix=''){
             <a href="${pathPrefix}index.html#footer" data-nav="contact">Contact</a>
           </nav>
           <div class="header-actions" id="headerAuthArea"></div>
-          <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+          <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span></button>
         </div>
       </header>`;
 
     if(typeof renderHeaderAuth === 'function') renderHeaderAuth('#headerAuthArea', pathPrefix);
 
-    document.getElementById('navToggle')?.addEventListener('click', ()=>{
-      document.getElementById('mainNav').classList.toggle('open');
+    const nav = document.getElementById('mainNav');
+    const toggle = document.getElementById('navToggle');
+    const closeNav = ()=>{ nav.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); };
+    toggle?.addEventListener('click', e=>{
+      e.stopPropagation();
+      const open = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+      if(open) document.getElementById('userPopover')?.classList.remove('open');   // one menu at a time
     });
+    nav?.addEventListener('click', e=>{ if(e.target.closest('a')) closeNav(); });   // close after choosing a link
+    document.addEventListener('click', e=>{ if(nav && !nav.contains(e.target) && !toggle.contains(e.target)) closeNav(); });
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeNav(); });
 
     const currentFile = (location.pathname.split('/').pop() || 'index.html');
     headerEl.querySelectorAll('.main-nav a').forEach(a=>{
