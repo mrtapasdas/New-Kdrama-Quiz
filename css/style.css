@@ -498,6 +498,41 @@ canvas{max-width:100%}
   height: 22px;
   fill: currentColor;
 }
+/* ===================== POST-QUIZ SEO & RELATED SECTION ===================== */
+.seo-article-content {
+  margin: 40px 0;
+  padding: 30px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+.seo-article-content h2 {
+  font-family: var(--font-serif);
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+.seo-article-content p {
+  color: var(--text-light);
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+.seo-article-content p:last-child {
+  margin-bottom: 0;
+}
+.related-quizzes-section {
+  margin: 50px 0 20px;
+  text-align: left;
+}
+.related-quizzes-section .section-head {
+  text-align: left;
+  margin: 0 0 24px 0;
+}
+.related-quizzes-section .section-head h2 {
+  margin-bottom: 6px;
+}
 
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:#000;border:1px solid var(--accent);color:var(--text);padding:14px 20px;border-radius:10px;
