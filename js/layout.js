@@ -66,11 +66,15 @@ function renderLayout(pathPrefix=''){
               <h4>Account</h4>
               <a href="${pathPrefix}login.html">Log In</a>
               <a href="${pathPrefix}login.html?mode=signup">Sign Up</a>
+              <a href="https://www.newkdrama.com/p/contact-us.html" target="_blank" rel="noopener">Contact Us</a>
             </div>
             <div class="footer-col">
               <h4>More</h4>
-              <a href="https://newkdrama.com" target="_blank" rel="noopener">NewKDrama.com</a>
+              <a href="https://newkdrama.com" target="_blank" rel="noopener">Latest Kdrama Updates</a>
+              <a href="https://www.newkdrama.com/p/about-us.html" target="_blank" rel="noopener">About Us</a>
               <a href="${pathPrefix}admin/index.html" id="footerAdminLink" hidden>Admin</a>
+              <a href="https://www.newkdrama.com/p/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>
+              <a href="https://www.newkdrama.com/p/terms-of-use.html" target="_blank" rel="noopener">Terms of Use</a>
             </div>
           </div>
           <div class="footer-bottom">© <span id="footerYear"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
