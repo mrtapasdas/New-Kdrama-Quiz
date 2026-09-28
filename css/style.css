@@ -23,6 +23,7 @@
   --font-kr:'Noto Serif KR',serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none !important}   /* the HTML hidden attribute must always win over rules like .footer-col a{display:block} */
 html,body{height:100%}
 html{scroll-behavior:smooth}
 body{
@@ -252,6 +253,32 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 /* ===================== QUIZ PLAY PAGE ===================== */
 .quiz-shell{max-width:760px;margin:30px auto;padding:0 20px}
+/* ---------- Quiz page layout: [ad rail] [quiz] [ad rail] on desktop ---------- */
+.quiz-layout{flex:1 0 auto}
+.quiz-layout > .quiz-shell{flex:none}
+.quiz-layout > .ad-below{margin:24px 20px 32px}      /* phones/tablets: keep the below-quiz ad off the screen edges */
+.ad-rail{display:none}                        /* rails only exist on wide screens */
+@media (min-width:1180px){
+  .quiz-layout{
+    display:grid;
+    grid-template-columns:160px minmax(0,760px) 160px;
+    justify-content:center;
+    column-gap:16px;
+    align-items:start;
+    padding:0 16px;
+  }
+  .quiz-layout > .quiz-shell{margin:30px 0}   /* the 760px column already centres it */
+  .ad-rail{
+    display:block;
+    position:sticky;top:90px;                 /* stays in view under the sticky header while scrolling */
+    margin-top:30px;
+    text-align:center;
+  }
+  .ad-rail .ad-label{display:block;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
+  .ad-rail ins{max-width:100%}
+  .quiz-layout > .ad-below{display:none}      /* no below-quiz ad on desktop */
+}
+
 .quiz-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:36px;text-align:center}
 .quiz-panel h1{font-family:var(--font-serif);font-size:1.8rem;margin-bottom:10px;color:var(--text)}
 .quiz-panel .cat-tag{margin-bottom:14px}
