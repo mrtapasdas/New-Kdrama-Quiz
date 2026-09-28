@@ -60,21 +60,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* ===================== HEADER ===================== */
 .site-header{
   position:sticky;top:0;z-index:100;
-  background:rgba(250,247,242,.92);backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--border);
+  background:rgba(10,10,10,.95);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--accent);
 }
+.logo{color:var(--accent);}
 .header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-serif);font-weight:700}
 .logo img{height:34px;width:auto}
 .main-nav{display:flex;align-items:center;gap:28px}
-.main-nav a{font-weight:600;font-size:.95rem;color:var(--text-light);position:relative;padding:4px 0}
-.main-nav a:hover,.main-nav a.active{color:var(--primary)}
+.main-nav a{font-weight:600;font-size:.95rem;color:#d8d2c4;position:relative;padding:4px 0}
+.main-nav a:hover,.main-nav a.active{color:var(--accent)}
 .main-nav a.active::after{content:"";position:absolute;left:0;bottom:-4px;width:100%;height:2px;background:var(--accent)}
 .header-actions{display:flex;align-items:center;gap:12px}
 .user-chip{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
 .nav-toggle{display:none;flex-direction:column;gap:5px;padding:8px}
-.nav-toggle span{width:24px;height:2px;background:var(--text)}
+.nav-toggle span{width:24px;height:2px;background:var(--accent)}
 
 /* ===================== HERO ===================== */
 .hero{
@@ -148,7 +149,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .footer-col p,.footer-col a{font-size:.88rem;color:#d9cdbb;display:block;margin-bottom:8px}
 .footer-col a:hover{color:var(--accent)}
 .footer-logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.footer-logo img{height:30px;filter:brightness(0) invert(1)}
+.footer-logo img{height:30px}   /* removed filter:brightness(0) invert(1) */
 .footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:18px;text-align:center;font-size:.8rem;color:#b8a992}
 
 /* ===================== AUTH PAGE ===================== */
