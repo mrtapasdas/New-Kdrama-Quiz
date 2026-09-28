@@ -1,6 +1,9 @@
 async function requireAdmin(){
-  const gate = document.getElementById('adminGate');
-  const session = await getSession();
+  // The admin UI starts hidden (see #adminBody in each admin page) and is only revealed
+  // after we've confirmed the signed-in user is an admin.
+  let session = null;
+  try{ session = await getSession(); }
+  catch(err){ console.error('Admin session check failed:', err); }
 
   if(!session){
     window.location.replace('../login.html?redirect=' + encodeURIComponent('admin/index.html'));
@@ -11,7 +14,8 @@ async function requireAdmin(){
     return null;
   }
 
-  if(gate) gate.classList.add('hidden');
+  const body = document.getElementById('adminBody');
+  if(body) body.style.display = '';
   return session;
 }
 

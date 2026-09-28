@@ -61,7 +61,7 @@ function renderLayout(pathPrefix=''){
             <div class="footer-col">
               <h4>More</h4>
               <a href="https://newkdrama.com" target="_blank" rel="noopener">NewKDrama.com</a>
-              <a href="${pathPrefix}admin/index.html">Admin</a>
+              <a href="${pathPrefix}admin/index.html" id="footerAdminLink" hidden>Admin</a>
             </div>
           </div>
           <div class="footer-bottom">© <span id="footerYear"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
@@ -69,5 +69,13 @@ function renderLayout(pathPrefix=''){
       </footer>`;
     const yearEl = document.getElementById('footerYear');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
+
+    /* Only admins ever see the Admin link. Everyone else never gets a link to it. */
+    if(typeof getSession === 'function'){
+      getSession().then(sess=>{
+        const link = document.getElementById('footerAdminLink');
+        if(link && sess && sess.isAdmin) link.hidden = false;
+      }).catch(()=>{ /* not signed in / lookup failed: keep the link hidden */ });
+    }
   }
 }
