@@ -1,9 +1,23 @@
 async function requireAdmin(){
+  const gateLoading = document.getElementById('adminGateLoading');
+  const shell = document.getElementById('adminShell');
   const session = await getSession();
-  if(!session){ window.location.href = '../login.html?redirect=' + encodeURIComponent('admin/index.html'); return null; }
-  if(!session.isAdmin){ alert('Admin access only.'); window.location.href = '../index.html'; return null; }
+
+  if(!session){
+    window.location.replace('../login.html?redirect=' + encodeURIComponent('admin/index.html'));
+    return null;
+  }
+  if(!session.isAdmin){
+    window.location.replace('../index.html');
+    return null;
+  }
+
+  // Access confirmed — reveal the dashboard now
+  if(gateLoading) gateLoading.style.display = 'none';
+  if(shell) shell.classList.add('ready');
   return session;
 }
+
 function initAdminChrome(session){
   const welcome = document.getElementById('adminWelcome');
   if(welcome && session) welcome.textContent = `Welcome, ${session.name}`;
