@@ -1,4 +1,5 @@
 let CURRENT_QUIZ=null, CURRENT_INDEX=0, SCORE=0, TIME_TAKEN=0, TIMER=null, TIME_LEFT=0, SESSION=null;
+let isAnswering = false; // ANTI-CHEAT LOCK
 
 function showQuizMessage(title, message, showHome=true){
   const shell = document.querySelector('.quiz-shell');
@@ -23,7 +24,10 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       return;
     }
     CURRENT_QUIZ = await DB.getQuiz(quizId);
+    
+    // Load related quizzes for AdSense content
     loadRelatedQuizzes(quizId);
+    
   }catch(err){
     console.error('Quiz load failed:', err);
     showQuizMessage('Could not load quiz', `Something went wrong while loading this quiz (${err.code || err.message}). Please try again.`);
@@ -82,6 +86,7 @@ function startQuiz(){
 }
 
 function loadQuestion(){
+  isAnswering = false; // Reset the anti-cheat lock for the new question
   const q = CURRENT_QUIZ.questions[CURRENT_INDEX];
   const total = CURRENT_QUIZ.questions.length;
   document.getElementById('progressFill').style.width = `${(CURRENT_INDEX/total)*100}%`;
@@ -95,20 +100,27 @@ function loadQuestion(){
 }
 
 function startTimer(seconds){
-  clearInterval(TIMER); TIME_LEFT=seconds;
-  document.getElementById('timerBadge').textContent = `⏱ ${TIME_LEFT}s`;
+  clearInterval(TIMER); 
+  TIME_LEFT = seconds;
+  const timerBadge = document.getElementById('timerBadge'); // Cached for performance
+  
+  timerBadge.textContent = `⏱ ${TIME_LEFT}s`;
   TIMER = setInterval(()=>{
     TIME_LEFT--; TIME_TAKEN++;
-    document.getElementById('timerBadge').textContent = `⏱ ${TIME_LEFT}s`;
+    timerBadge.textContent = `⏱ ${TIME_LEFT}s`;
     if(TIME_LEFT<=0){ clearInterval(TIMER); selectAnswer(-1); }
   },1000);
 }
 
 function selectAnswer(index){
+  if (isAnswering) return; // Prevent double-clicks from registering twice
+  isAnswering = true;
+  
   clearInterval(TIMER);
   const q = CURRENT_QUIZ.questions[CURRENT_INDEX];
   const buttons = document.querySelectorAll('.option-btn');
   buttons.forEach(b=>b.classList.add('disabled'));
+  
   if(index === q.answer){
     buttons[index].classList.add('correct');
     SCORE += 10 + Math.max(0, Math.floor(TIME_LEFT*2));
