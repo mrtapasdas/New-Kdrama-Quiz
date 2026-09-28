@@ -44,7 +44,9 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Quizzes Played</th><th>Actions</th></tr></thead>
-          <tbody id="usersBody"></tbody>
+          <tbody id="usersBody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-light)">Loading users...</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -53,40 +55,61 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
+
 <script>
+let CURRENT_SESSION = null;
+let CACHED_USERS = [];
+let CACHED_SCORES = [];
+
 document.addEventListener('DOMContentLoaded', async ()=>{
-  await seedDatabase();
-  requireAdmin();
-  initAdminChrome();
-  renderUsers();
+  const session = await requireAdmin();
+  if(!session) return;
+  CURRENT_SESSION = session;
+  initAdminChrome(session);
+
+  await loadUsers();
   document.getElementById('userSearch').addEventListener('input', e=>renderUsers(e.target.value));
 });
 
+async function loadUsers(){
+  const body = document.getElementById('usersBody');
+  try{
+    const [users, scores] = await Promise.all([ DB.getUsers(), DB.getAllScores() ]);
+    CACHED_USERS = users;
+    CACHED_SCORES = scores;
+    renderUsers();
+  }catch(err){
+    console.error('Failed to load users:', err);
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger)">Failed to load users.</td></tr>`;
+  }
+}
+
 function renderUsers(filter=''){
-  const users = DB.users();
-  const scores = DB.scores();
   const term = filter.trim().toLowerCase();
 
-  document.getElementById('uTotal').textContent = users.length;
-  document.getElementById('uAdmins').textContent = users.filter(u=>u.isAdmin).length;
-  document.getElementById('uActive').textContent = new Set(scores.map(s=>s.userId)).size;
+  document.getElementById('uTotal').textContent = CACHED_USERS.length;
+  document.getElementById('uAdmins').textContent = CACHED_USERS.filter(u=>u.isAdmin).length;
+  document.getElementById('uActive').textContent = new Set(CACHED_SCORES.map(s=>s.userId)).size;
 
-  const filtered = users.filter(u=> u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
+  const filtered = CACHED_USERS.filter(u=>
+    (u.name||'').toLowerCase().includes(term) || (u.email||'').toLowerCase().includes(term));
+
   const body = document.getElementById('usersBody');
   body.innerHTML = filtered.length ? filtered.map(u=>{
-    const played = scores.filter(s=>s.userId===u.id).length;
+    const played = CACHED_SCORES.filter(s=>s.userId===u.id).length;
     return `<tr>
-      <td>${u.name}</td>
-      <td>${u.email}</td>
+      <td>${u.name || '—'}</td>
+      <td>${u.email || '—'}</td>
       <td><span class="badge ${u.isAdmin?'badge-admin':'badge-user'}">${u.isAdmin?'Admin':'User'}</span></td>
-      <td>${new Date(u.joined).toLocaleDateString()}</td>
+      <td>${u.joined ? new Date(u.joined).toLocaleDateString() : '—'}</td>
       <td>${played}</td>
       <td>
         <button class="btn btn-outline btn-sm" onclick="toggleAdmin('${u.id}')">${u.isAdmin?'Remove Admin':'Make Admin'}</button>
@@ -96,23 +119,32 @@ function renderUsers(filter=''){
   }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text-light)">No users found</td></tr>`;
 }
 
-function toggleAdmin(id){
-  const users = DB.users();
-  const u = users.find(x=>x.id===id);
+async function toggleAdmin(id){
+  const u = CACHED_USERS.find(x=>x.id===id);
   if(!u) return;
-  u.isAdmin = !u.isAdmin;
-  DB.saveUsers(users);
-  renderUsers(document.getElementById('userSearch').value);
-  showToast(`${u.name} is ${u.isAdmin?'now an admin':'no longer an admin'}.`);
+  try{
+    await DB.updateUser(id, { isAdmin: !u.isAdmin });
+    u.isAdmin = !u.isAdmin;
+    renderUsers(document.getElementById('userSearch').value);
+    showToast(`${u.name} is ${u.isAdmin?'now an admin':'no longer an admin'}.`);
+  }catch(err){
+    console.error('Toggle admin failed:', err);
+    showToast('Failed to update user. Check console for details.');
+  }
 }
 
-function deleteUser(id){
-  const session = getSession();
-  if(id === session.userId){ showToast("You can't delete your own account while logged in."); return; }
-  if(!confirm('Delete this user permanently?')) return;
-  DB.saveUsers(DB.users().filter(u=>u.id!==id));
-  renderUsers(document.getElementById('userSearch').value);
-  showToast('User deleted.');
+async function deleteUser(id){
+  if(id === CURRENT_SESSION.userId){ showToast("You can't delete your own account while logged in."); return; }
+  if(!confirm('Delete this user\'s profile permanently? (Note: this removes their Firestore profile, not their Firebase Auth login — see note below.)')) return;
+  try{
+    await DB.deleteUserProfile(id);
+    CACHED_USERS = CACHED_USERS.filter(u=>u.id!==id);
+    renderUsers(document.getElementById('userSearch').value);
+    showToast('User profile deleted.');
+  }catch(err){
+    console.error('Delete user failed:', err);
+    showToast('Failed to delete user.');
+  }
 }
 </script>
 </body>
