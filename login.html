@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log In or Sign Up | NEW K-DRAMA Quiz</title>
+<meta name="description" content="Log in or create a free account to play K-drama quizzes and join the leaderboard.">
+<link rel="canonical" href="https://quiz.newkdrama.com/login.html">
+<meta name="robots" content="noindex">
+<link rel="icon" href="images/favicon.ico">
+<link rel="stylesheet" href="css/style.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="logo"><img src="images/logo.png" alt="NEW K-DRAMA logo"></a>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="index.html#quizzes">Quizzes</a>
+      <a href="index.html#instructions">Instructions</a>
+    </nav>
+    <div class="header-actions" id="headerAuthArea"></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <div class="auth-grid">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Log In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+      <div class="form-success" id="formSuccess"></div>
+
+      <form class="auth-form active" id="loginForm">
+        <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required></div>
+        <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required minlength="6"></div>
+        <button class="btn btn-primary btn-block" type="submit">Log In</button>
+      </form>
+
+      <form class="auth-form" id="signupForm">
+        <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" required></div>
+        <div class="form-group"><label for="signupEmail">Email</label><input type="email" id="signupEmail" required></div>
+        <div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" required minlength="6"></div>
+        <div class="form-group"><label for="signupConfirm">Confirm Password</label><input type="password" id="signupConfirm" required minlength="6"></div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+
+      <p class="auth-note">By continuing you agree to play fair and have fun 🎬</p>
+      <div class="demo-box">Demo admin login: <b>admin@newkdrama.com</b> / <b>admin123</b></div>
+    </div>
+
+    <div class="ad-slot" style="margin:0">
+      <span class="ad-label">Advertisement</span>
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="3333333333" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-bottom">© <span id="year"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
+</footer>
+
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await seedDatabase();
+  renderHeaderAuth();
+  document.getElementById('year').textContent = new Date().getFullYear();
+  document.getElementById('navToggle')?.addEventListener('click', ()=>document.getElementById('mainNav').classList.toggle('open'));
+
+  const params = new URLSearchParams(location.search);
+  const redirect = params.get('redirect');
+  if(params.get('mode')==='signup') switchTab('signup');
+
+  document.querySelectorAll('.auth-tab').forEach(t=>t.addEventListener('click', ()=>switchTab(t.dataset.tab)));
+  function switchTab(tab){
+    document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+    document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+    document.getElementById(tab+'Form').classList.add('active');
+    hideMessages();
+  }
+  function hideMessages(){
+    document.getElementById('formError').style.display='none';
+    document.getElementById('formSuccess').style.display='none';
+  }
+  function showError(msg){ const el=document.getElementById('formError'); el.textContent=msg; el.style.display='block'; }
+  function showSuccess(msg){ const el=document.getElementById('formSuccess'); el.textContent=msg; el.style.display='block'; }
+
+  function afterAuthRedirect(){
+    window.location.href = redirect ? decodeURIComponent(redirect) : 'index.html';
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault(); hideMessages();
+    try{
+      await loginUser({ email:document.getElementById('loginEmail').value, password:document.getElementById('loginPassword').value });
+      showSuccess('Logged in! Redirecting...');
+      setTimeout(afterAuthRedirect, 500);
+    }catch(err){ showError(err.message); }
+  });
+
+  document.getElementById('signupForm').addEventListener('submit', async (e)=>{
+    e.preventDefault(); hideMessages();
+    const pw = document.getElementById('signupPassword').value;
+    const cpw = document.getElementById('signupConfirm').value;
+    if(pw !== cpw){ showError('Passwords do not match.'); return; }
+    try{
+      await signupUser({ name:document.getElementById('signupName').value, email:document.getElementById('signupEmail').value, password:pw });
+      showSuccess('Account created! Redirecting...');
+      setTimeout(afterAuthRedirect, 500);
+    }catch(err){ showError(err.message); }
+  });
+});
+</script>
+</body>
+</html>
