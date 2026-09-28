@@ -34,20 +34,29 @@ function getCurrentUser(){
 function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
   const el = document.querySelector(rootSelector);
   if(!el) return;
-  const s = getSession();
-  if(!s){
+
+  try{
+    const s = getSession();
+    if(!s){
+      el.innerHTML = `
+        <a href="${pathPrefix}login.html" class="btn btn-outline btn-sm">Log In</a>
+        <a href="${pathPrefix}login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>`;
+      return;
+    }
+    const initial = s.name ? s.name.charAt(0).toUpperCase() : 'U';
+    el.innerHTML = `
+      <div class="user-chip">
+        <div class="avatar">${initial}</div>
+        <span>${s.name}</span>
+      </div>
+      ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm">Admin</a>` : ''}
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log Out</button>`;
+    document.getElementById('logoutBtn')?.addEventListener('click', logoutUser);
+  }catch(err){
+    console.error('renderHeaderAuth failed, showing fallback buttons:', err);
     el.innerHTML = `
       <a href="${pathPrefix}login.html" class="btn btn-outline btn-sm">Log In</a>
       <a href="${pathPrefix}login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>`;
-    return;
   }
-  const initial = s.name ? s.name.charAt(0).toUpperCase() : 'U';
-  el.innerHTML = `
-    <div class="user-chip">
-      <div class="avatar">${initial}</div>
-      <span>${s.name}</span>
-    </div>
-    ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm">Admin</a>` : ''}
-    <button class="btn btn-ghost btn-sm" id="logoutBtn">Log Out</button>`;
-  document.getElementById('logoutBtn')?.addEventListener('click', logoutUser);
 }
+
