@@ -7,38 +7,32 @@
 <meta name="description" content="Log in or create a free account to play K-drama quizzes and join the leaderboard.">
 <link rel="canonical" href="https://quiz.newkdrama.com/login.html">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-<script src="js/db.js"></script>
-<script>
-  (function(){
-    var s = DB.session();
-    if(s && s.userId){
-      var params = new URLSearchParams(location.search);
-      var redirect = params.get('redirect');
-      location.replace(redirect ? decodeURIComponent(redirect) : 'index.html');
-    }
-  })();
-</script>
 <link rel="stylesheet" href="css/style.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+<script src="js/db.js"></script>
+<script>
+  /* Redirect guard: if already logged in, skip this page entirely */
+  (function(){
+    try{
+      const s = DB.session();
+      if(s && s.userId){
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+        location.replace(redirect ? decodeURIComponent(redirect) : 'index.html');
+      }
+    }catch(e){ console.error('Session check failed:', e); }
+  })();
+</script>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="logo"><img src="images/logo.png" alt="NEW K-DRAMA logo"></a>
-    <nav class="main-nav" id="mainNav">
-      <a href="index.html">Home</a>
-      <a href="index.html#quizzes">Quizzes</a>
-      <a href="index.html#instructions">Instructions</a>
-    </nav>
-    <div class="header-actions" id="headerAuthArea"></div>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  </div>
-</header>
+<div id="site-header"></div>
 
 <main class="auth-wrap">
   <div class="auth-grid">
@@ -77,18 +71,13 @@
   </div>
 </main>
 
-<footer class="site-footer">
-  <div class="container footer-bottom">© <span id="year"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
-</footer>
+<div id="site-footer"></div>
 
-<script src="js/db.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', async ()=>{
-  await seedDatabase();
-  renderHeaderAuth();
-  document.getElementById('year').textContent = new Date().getFullYear();
-  document.getElementById('navToggle')?.addEventListener('click', ()=>document.getElementById('mainNav').classList.toggle('open'));
+document.addEventListener('DOMContentLoaded', ()=>{
+  try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
 
   const params = new URLSearchParams(location.search);
   const redirect = params.get('redirect');
