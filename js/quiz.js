@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       return;
     }
     CURRENT_QUIZ = await DB.getQuiz(quizId);
+    loadRelatedQuizzes(quizId);
   }catch(err){
     console.error('Quiz load failed:', err);
     showQuizMessage('Could not load quiz', `Something went wrong while loading this quiz (${err.code || err.message}). Please try again.`);
