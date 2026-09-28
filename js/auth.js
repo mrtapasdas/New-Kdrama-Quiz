@@ -67,15 +67,16 @@ function getSession(){
     const unsubscribe = auth.onAuthStateChanged(async (user)=>{
       unsubscribe();
       if(!user){ resolve(null); return; }
-      try{
-        const profile = await DB.getUser(user.uid);
-        resolve({
-          userId: user.uid,
-          name: profile?.name || user.displayName || 'User',
-          email: user.email,
-          isAdmin: !!profile?.isAdmin
-        });
-      }catch(err){ reject(err); }
+      // A failed profile read (e.g. Firestore rules) must not lock a signed-in player out of the quizzes.
+      let profile = null;
+      try{ profile = await DB.getUser(user.uid); }
+      catch(err){ console.error('Could not read user profile (treating as non-admin):', err); }
+      resolve({
+        userId: user.uid,
+        name: profile?.name || user.displayName || 'User',
+        email: user.email,
+        isAdmin: !!profile?.isAdmin
+      });
     });
   });
 }
@@ -92,7 +93,7 @@ function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
     }
     const initial = s.name ? s.name.charAt(0).toUpperCase() : 'U';
     el.innerHTML = `
-  <div class="user-chip"><div class="avatar">${initial}</div><span class="user-name">${s.name}</span></div>
+  <div class="user-chip"><div class="avatar">${initial}</div><span class="user-name">${escapeHtml(s.name)}</span></div>
   ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm admin-btn">Admin</a>` : ''}
   <button class="btn btn-ghost btn-sm logout-btn" id="logoutBtn">Log Out</button>`;
     document.getElementById('logoutBtn')?.addEventListener('click', logoutUser);

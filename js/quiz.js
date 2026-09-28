@@ -1,20 +1,40 @@
 let CURRENT_QUIZ=null, CURRENT_INDEX=0, SCORE=0, TIME_TAKEN=0, TIMER=null, TIME_LEFT=0, SESSION=null;
 
+function showQuizMessage(title, message, showHome=true){
+  const shell = document.querySelector('.quiz-shell');
+  shell.innerHTML = `<section class="quiz-panel"><h1>${escapeHtml(title)}</h1>
+    <p class="quiz-desc">${escapeHtml(message)}</p>
+    ${showHome ? '<a href="index.html" class="btn btn-primary">Back to Home</a>' : ''}</section>`;
+}
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
 
-  const params = new URLSearchParams(location.search);
-  const quizId = params.get('id');
-
-  SESSION = await getSession();
-  if(!SESSION){
-    window.location.href = `login.html?redirect=${encodeURIComponent(`quiz.html?id=${quizId}`)}`;
+  const quizId = new URLSearchParams(location.search).get('id');
+  if(!quizId){
+    showQuizMessage('Quiz not found', 'This quiz link is missing its ID. Pick a quiz from the home page.');
     return;
   }
 
-  CURRENT_QUIZ = await DB.getQuiz(quizId);
+  try{
+    SESSION = await getSession();
+    if(!SESSION){
+      window.location.href = `login.html?redirect=${encodeURIComponent(`quiz.html?id=${quizId}`)}`;
+      return;
+    }
+    CURRENT_QUIZ = await DB.getQuiz(quizId);
+  }catch(err){
+    console.error('Quiz load failed:', err);
+    showQuizMessage('Could not load quiz', `Something went wrong while loading this quiz (${err.code || err.message}). Please try again.`);
+    return;
+  }
+
   if(!CURRENT_QUIZ){
-    document.querySelector('.quiz-shell').innerHTML = `<div class="quiz-panel"><h1>Quiz not found</h1><a href="index.html" class="btn btn-primary">Back to Home</a></div>`;
+    showQuizMessage('Quiz not found', 'This quiz may have been removed.');
+    return;
+  }
+  if(!CURRENT_QUIZ.questions.length){
+    showQuizMessage('No questions yet', 'This quiz does not have any questions yet. Please check back soon.');
     return;
   }
 
@@ -26,11 +46,17 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('startTime').textContent = CURRENT_QUIZ.timePerQuestion;
   document.getElementById('startDiff').textContent = CURRENT_QUIZ.difficulty;
 
-  const scores = await DB.getScoresForQuiz(CURRENT_QUIZ.id);
-  renderLeaderboard('startLeaderboard', scores, SESSION.userId);
-
+  // Wire up the buttons BEFORE loading the leaderboard, so a leaderboard problem can never block playing.
   document.getElementById('startBtn').addEventListener('click', startQuiz);
   document.getElementById('retryBtn').addEventListener('click', ()=>location.reload());
+
+  try{
+    const scores = await DB.getScoresForQuiz(CURRENT_QUIZ.id);
+    renderLeaderboard('startLeaderboard', scores, SESSION.userId);
+  }catch(err){
+    console.error('Leaderboard load failed:', err);
+    document.getElementById('startLeaderboard').innerHTML = `<p class="lb-empty">Leaderboard unavailable right now.</p>`;
+  }
 });
 
 function renderLeaderboard(containerId, scores, currentUserId){
@@ -42,8 +68,8 @@ function renderLeaderboard(containerId, scores, currentUserId){
     const isMe = s.userId===currentUserId;
     return `<div class="lb-row ${isMe?'me':''}">
       <div class="lb-rank ${rankClass}">${i+1}</div>
-      <div class="lb-name">${s.userName}${isMe?' (You)':''}</div>
-      <div class="lb-score">${s.score} pts</div></div>`;
+      <div class="lb-name">${escapeHtml(s.userName)}${isMe?' (You)':''}</div>
+      <div class="lb-score">${Number(s.score)||0} pts</div></div>`;
   }).join('');
 }
 
@@ -63,9 +89,9 @@ function loadQuestion(){
   document.getElementById('qCount').textContent = `Question ${CURRENT_INDEX+1} of ${total}`;
   document.getElementById('questionText').textContent = q.q;
   const grid = document.getElementById('optionsGrid');
-  const letters = ['A','B','C','D'];
-  grid.innerHTML = q.options.map((opt,i)=>`<button class="option-btn" data-index="${i}"><span class="letter">${letters[i]}</span>${opt}</button>`).join('');
-  grid.querySelectorAll('.option-btn').forEach(btn=>btn.addEventListener('click', ()=>selectAnswer(parseInt(btn.dataset.index))));
+  const letters = ['A','B','C','D','E','F'];
+  grid.innerHTML = q.options.map((opt,i)=>`<button class="option-btn" data-index="${i}"><span class="letter">${letters[i]||i+1}</span>${escapeHtml(opt)}</button>`).join('');
+  grid.querySelectorAll('.option-btn').forEach(btn=>btn.addEventListener('click', ()=>selectAnswer(parseInt(btn.dataset.index, 10))));
   startTimer(CURRENT_QUIZ.timePerQuestion);
 }
 
@@ -88,8 +114,8 @@ function selectAnswer(index){
     buttons[index].classList.add('correct');
     SCORE += 10 + Math.max(0, Math.floor(TIME_LEFT*2));
   } else {
-    if(index>=0) buttons[index].classList.add('wrong');
-    buttons[q.answer].classList.add('correct');
+    if(index>=0 && buttons[index]) buttons[index].classList.add('wrong');
+    if(buttons[q.answer]) buttons[q.answer].classList.add('correct');
   }
   setTimeout(()=>{
     CURRENT_INDEX++;
@@ -104,18 +130,33 @@ async function finishQuiz(){
   document.getElementById('resultScreen').style.display='block';
   document.getElementById('resultAd').style.display='block';
 
-  const maxScore = CURRENT_QUIZ.questions.length * 30;
+  // Best possible score per question is 10 + 2 points for each second left on the clock.
+  const maxScore = CURRENT_QUIZ.questions.length * (10 + CURRENT_QUIZ.timePerQuestion*2);
   document.getElementById('resultScore').textContent = `${SCORE} pts`;
   document.getElementById('resultEmoji').textContent = SCORE>=maxScore*0.7?'🏆':SCORE>=maxScore*0.4?'🎉':'💪';
   document.getElementById('resultMsg').textContent = SCORE>=maxScore*0.7?"You're a true K-drama expert!":SCORE>=maxScore*0.4?"Nice job! Keep watching and try again.":"Time to binge a few more episodes and retry!";
 
-  await DB.addScore({ quizId:CURRENT_QUIZ.id, userId:SESSION.userId, userName:SESSION.name, score:SCORE, timeTaken:TIME_TAKEN });
+  const banner = document.getElementById('yourRankBanner');
+  banner.style.display='none';
 
-  const scores = await DB.getScoresForQuiz(CURRENT_QUIZ.id);
+  let saved = true;
+  try{
+    await DB.addScore({ quizId:CURRENT_QUIZ.id, userId:SESSION.userId, userName:SESSION.name, score:SCORE, timeTaken:TIME_TAKEN });
+  }catch(err){
+    saved = false;
+    console.error('Saving score failed:', err);
+  }
+
+  let scores = [];
+  try{ scores = await DB.getScoresForQuiz(CURRENT_QUIZ.id); }
+  catch(err){ console.error('Leaderboard load failed:', err); }
   renderLeaderboard('resultLeaderboard', scores, SESSION.userId);
 
+  if(!saved){
+    banner.style.display='block';
+    banner.textContent = "We couldn't save your score to the leaderboard this time.";
+    return;
+  }
   const rank = getUserBestRank(scores, SESSION.userId);
-  const banner = document.getElementById('yourRankBanner');
   if(rank && rank > 10){ banner.style.display='block'; banner.textContent = `Your Rank: #${rank} — climb the leaderboard next time!`; }
-  else{ banner.style.display='none'; }
 }

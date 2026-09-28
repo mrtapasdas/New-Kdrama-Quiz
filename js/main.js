@@ -9,12 +9,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initHomeQuizzes(){
   const quizzes = await DB.getQuizzes();
-  const allScores = await DB.getAllScores();
+  // The quiz list must still show even if reading scores fails (e.g. Firestore rules).
+  let allScores = [];
+  try{ allScores = await DB.getAllScores(); }
+  catch(err){ console.warn('Could not load scores for stats:', err); }
 
   const categories = ['All', ...new Set(quizzes.map(q=>q.category))];
   const bar = document.getElementById('categoryBar');
   bar.innerHTML = categories.map((c,i)=>
-    `<button class="category-chip ${i===0?'active':''}" data-cat="${c}">${c}</button>`).join('');
+    `<button class="category-chip ${i===0?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join('');
 
   function renderGrid(filter='All'){
     const grid = document.getElementById('quizGrid');
@@ -22,13 +25,13 @@ async function initHomeQuizzes(){
     if(!list.length){ grid.innerHTML = `<p class="empty-state">No quizzes in this category yet.</p>`; return; }
     grid.innerHTML = list.map(q=>`
       <article class="quiz-card">
-        <div class="quiz-thumb"><span class="tag">${q.category}</span><img src="${q.thumbnail}" alt="${q.title} quiz thumbnail" loading="lazy"></div>
+        <div class="quiz-thumb"><span class="tag">${escapeHtml(q.category)}</span><img src="${escapeHtml(q.thumbnail)}" alt="${escapeHtml(q.title)} quiz thumbnail" loading="lazy"></div>
         <div class="quiz-body">
-          <h3>${q.title}</h3><p>${q.description}</p>
+          <h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.description)}</p>
           <div class="quiz-meta">
-            <span>📝 ${q.questions.length} Qs</span><span>⏱ ${q.timePerQuestion}s/Q</span><span>🎯 ${q.difficulty}</span>
+            <span>📝 ${q.questions.length} Qs</span><span>⏱ ${q.timePerQuestion}s/Q</span><span>🎯 ${escapeHtml(q.difficulty)}</span>
           </div>
-          <a href="quiz.html?id=${q.id}" class="btn btn-primary btn-block">Play Quiz</a>
+          <a href="quiz.html?id=${encodeURIComponent(q.id)}" class="btn btn-primary btn-block">Play Quiz</a>
         </div>
       </article>`).join('');
   }
@@ -44,13 +47,4 @@ async function initHomeQuizzes(){
   document.getElementById('statQuizzes').textContent = quizzes.length;
   document.getElementById('statPlayers').textContent = new Set(allScores.map(s=>s.userId)).size;
   document.getElementById('statCategories').textContent = new Set(quizzes.map(q=>q.category)).size;
-}
-
-function getTopScores(scoresArray, limit=10){
-  return [...scoresArray].sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken).slice(0, limit);
-}
-function getUserBestRank(scoresArray, userId){
-  const all = [...scoresArray].sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken);
-  const idx = all.findIndex(s=>s.userId===userId);
-  return idx===-1 ? null : idx+1;
 }
