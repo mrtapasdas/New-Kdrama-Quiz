@@ -75,9 +75,7 @@ function renderLeaderboard(containerId, scores, currentUserId){
 
 function startQuiz(){
   document.getElementById('startScreen').style.display='none';
-  document.getElementById('startAd').style.display='none';
   document.getElementById('playScreen').style.display='block';
-  document.getElementById('playAd').style.display='block';
   CURRENT_INDEX=0; SCORE=0; TIME_TAKEN=0;
   loadQuestion();
 }
@@ -126,9 +124,7 @@ function selectAnswer(index){
 async function finishQuiz(){
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('playScreen').style.display='none';
-  document.getElementById('playAd').style.display='none';
   document.getElementById('resultScreen').style.display='block';
-  document.getElementById('resultAd').style.display='block';
 
   // Best possible score per question is 10 + 2 points for each second left on the clock.
   const maxScore = CURRENT_QUIZ.questions.length * (10 + CURRENT_QUIZ.timePerQuestion*2);
