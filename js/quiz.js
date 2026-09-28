@@ -2,10 +2,8 @@
 let CURRENT_QUIZ = null, CURRENT_INDEX = 0, SCORE = 0, TIME_TAKEN = 0, TIMER = null, TIME_LEFT = 0;
 
 document.addEventListener('DOMContentLoaded', async ()=>{
+  try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
   await seedDatabase();
-  renderHeaderAuth();
-  document.getElementById('year').textContent = new Date().getFullYear();
-  document.getElementById('navToggle')?.addEventListener('click', ()=>document.getElementById('mainNav').classList.toggle('open'));
 
   const params = new URLSearchParams(location.search);
   const quizId = params.get('id');
@@ -13,11 +11,11 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   CURRENT_QUIZ = quizzes.find(q=>q.id===quizId);
 
   if(!CURRENT_QUIZ){
-    document.querySelector('main').innerHTML = `<div class="quiz-panel"><h1>Quiz not found</h1><p class="quiz-desc">This quiz may have been removed.</p><a href="index.html" class="btn btn-primary">Back to Home</a></div>`;
+    document.querySelector('.quiz-shell').innerHTML = `<div class="quiz-panel"><h1>Quiz not found</h1><p class="quiz-desc">This quiz may have been removed.</p><a href="index.html" class="btn btn-primary">Back to Home</a></div>`;
     return;
   }
 
-  // Gate behind login
+  // Gate behind login — bounce to login page, then come straight back here after auth
   const session = getSession();
   if(!session){
     const redirectUrl = encodeURIComponent(`quiz.html?id=${quizId}`);
@@ -58,7 +56,7 @@ function startQuiz(){
   document.getElementById('startScreen').style.display='none';
   document.getElementById('startAd').style.display='none';
   document.getElementById('playScreen').style.display='block';
-  document.getElementById('playAd').style.display='block';   // ← added
+  document.getElementById('playAd').style.display='block';
   CURRENT_INDEX = 0; SCORE = 0; TIME_TAKEN = 0;
   loadQuestion();
 }
@@ -118,7 +116,7 @@ function selectAnswer(index){
 function finishQuiz(){
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('playScreen').style.display='none';
-  document.getElementById('playAd').style.display='none';    // ← added
+  document.getElementById('playAd').style.display='none';
   document.getElementById('resultScreen').style.display='block';
   document.getElementById('resultAd').style.display='block';
 
@@ -131,9 +129,7 @@ function finishQuiz(){
     SCORE >= maxScore*0.4 ? "Nice job! Keep watching and try again." :
     "Time to binge a few more episodes and retry!";
 
-  // Save score
   const scores = DB.scores();
-  // mark previous entries for this user/quiz as not-latest, keep history but rank by best
   const entry = {
     id: uid('s'), quizId: CURRENT_QUIZ.id, userId: session.userId, userName: session.name,
     score: SCORE, timeTaken: TIME_TAKEN, date: new Date().toISOString(), __isLatest:true
@@ -152,10 +148,4 @@ function finishQuiz(){
   } else {
     banner.style.display='none';
   }
-}
-
-function getUserBestRank(quizId, userId){
-  const all = DB.scores().filter(s=>s.quizId===quizId).sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken);
-  const idx = all.findIndex(s=>s.userId===userId);
-  return idx===-1 ? null : idx+1;
 }
