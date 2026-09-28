@@ -1,7 +1,5 @@
-/* ===================== main.js ===================== */
 document.addEventListener('DOMContentLoaded', () => {
   try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
-
   initHomeQuizzes().catch(err=>{
     console.error('Quiz loading failed:', err);
     const grid = document.getElementById('quizGrid');
@@ -10,9 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initHomeQuizzes(){
-  await seedDatabase();
+  const quizzes = await DB.getQuizzes();
+  const allScores = await DB.getAllScores();
 
-  const quizzes = DB.quizzes();
   const categories = ['All', ...new Set(quizzes.map(q=>q.category))];
   const bar = document.getElementById('categoryBar');
   bar.innerHTML = categories.map((c,i)=>
@@ -26,12 +24,9 @@ async function initHomeQuizzes(){
       <article class="quiz-card">
         <div class="quiz-thumb"><span class="tag">${q.category}</span><img src="${q.thumbnail}" alt="${q.title} quiz thumbnail" loading="lazy"></div>
         <div class="quiz-body">
-          <h3>${q.title}</h3>
-          <p>${q.description}</p>
+          <h3>${q.title}</h3><p>${q.description}</p>
           <div class="quiz-meta">
-            <span>📝 ${q.questions.length} Qs</span>
-            <span>⏱ ${q.timePerQuestion}s/Q</span>
-            <span>🎯 ${q.difficulty}</span>
+            <span>📝 ${q.questions.length} Qs</span><span>⏱ ${q.timePerQuestion}s/Q</span><span>🎯 ${q.difficulty}</span>
           </div>
           <a href="quiz.html?id=${q.id}" class="btn btn-primary btn-block">Play Quiz</a>
         </div>
@@ -46,21 +41,16 @@ async function initHomeQuizzes(){
   });
 
   renderGrid();
-
   document.getElementById('statQuizzes').textContent = quizzes.length;
-  document.getElementById('statPlayers').textContent = new Set(DB.scores().map(s=>s.userId)).size;
+  document.getElementById('statPlayers').textContent = new Set(allScores.map(s=>s.userId)).size;
   document.getElementById('statCategories').textContent = new Set(quizzes.map(q=>q.category)).size;
 }
 
-/* Shared helpers used by main.js and quiz.js */
-function getTopScores(quizId, limit=10){
-  return DB.scores()
-    .filter(s=>s.quizId===quizId)
-    .sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken)
-    .slice(0, limit);
+function getTopScores(scoresArray, limit=10){
+  return [...scoresArray].sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken).slice(0, limit);
 }
-function getUserBestRank(quizId, userId){
-  const all = DB.scores().filter(s=>s.quizId===quizId).sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken);
+function getUserBestRank(scoresArray, userId){
+  const all = [...scoresArray].sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken);
   const idx = all.findIndex(s=>s.userId===userId);
   return idx===-1 ? null : idx+1;
 }
