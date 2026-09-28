@@ -92,9 +92,9 @@ function renderHeaderAuth(rootSelector='#headerAuthArea', pathPrefix=''){
     }
     const initial = s.name ? s.name.charAt(0).toUpperCase() : 'U';
     el.innerHTML = `
-      <div class="user-chip"><div class="avatar">${initial}</div><span>${s.name}</span></div>
-      ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm">Admin</a>` : ''}
-      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log Out</button>`;
+  <div class="user-chip"><div class="avatar">${initial}</div><span class="user-name">${s.name}</span></div>
+  ${s.isAdmin ? `<a href="${pathPrefix}admin/index.html" class="btn btn-outline btn-sm admin-btn">Admin</a>` : ''}
+  <button class="btn btn-ghost btn-sm logout-btn" id="logoutBtn">Log Out</button>`;
     document.getElementById('logoutBtn')?.addEventListener('click', logoutUser);
   }).catch(err=>{
     console.error('renderHeaderAuth failed:', err);
