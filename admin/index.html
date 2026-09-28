@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | NEW K-DRAMA Quiz</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../images/favicon.ico">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="admin-body">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <a href="index.html" class="logo"><img src="../images/logo.png" alt="NEW K-DRAMA"></a>
+    <nav class="admin-nav">
+      <a href="index.html" class="active">📊 Dashboard</a>
+      <a href="analytics.html">📈 Analytics</a>
+      <a href="quiz-creation.html">📝 Quiz Creation</a>
+      <a href="users.html">👥 Users</a>
+      <a href="../index.html">🏠 View Site</a>
+      <a href="#" id="adminLogout">🚪 Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="btn btn-outline btn-sm mobile-admin-toggle" id="sidebarToggle">☰ Menu</button>
+      <h1>Dashboard</h1>
+      <span id="adminWelcome" style="color:var(--text-light);font-size:.9rem"></span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><span>Total Quizzes</span><b id="statTotalQuizzes">0</b></div>
+      <div class="stat-card"><span>Total Users</span><b id="statTotalUsers">0</b></div>
+      <div class="stat-card"><span>Quiz Attempts</span><b id="statTotalAttempts">0</b></div>
+      <div class="stat-card"><span>Avg. Score</span><b id="statAvgScore">0</b></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Most Played Quizzes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Quiz</th><th>Category</th><th>Attempts</th><th>Avg Score</th></tr></thead>
+          <tbody id="popularQuizzesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Recent Quiz Attempts</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Quiz</th><th>Score</th><th>Date</th></tr></thead>
+          <tbody id="recentAttemptsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/db.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await seedDatabase();
+  requireAdmin();
+  initAdminChrome();
+
+  const quizzes = DB.quizzes();
+  const scores = DB.scores();
+  const users = DB.users();
+
+  document.getElementById('statTotalQuizzes').textContent = quizzes.length;
+  document.getElementById('statTotalUsers').textContent = users.length;
+  document.getElementById('statTotalAttempts').textContent = scores.length;
+  const avg = scores.length ? Math.round(scores.reduce((a,s)=>a+s.score,0)/scores.length) : 0;
+  document.getElementById('statAvgScore').textContent = avg;
+
+  const popularBody = document.getElementById('popularQuizzesBody');
+  const stats = quizzes.map(q=>{
+    const attempts = scores.filter(s=>s.quizId===q.id);
+    const avgScore = attempts.length ? Math.round(attempts.reduce((a,s)=>a+s.score,0)/attempts.length) : 0;
+    return { ...q, attemptCount:attempts.length, avgScore };
+  }).sort((a,b)=>b.attemptCount-a.attemptCount).slice(0,6);
+  popularBody.innerHTML = stats.length ? stats.map(q=>`
+    <tr><td>${q.title}</td><td>${q.category}</td><td>${q.attemptCount}</td><td>${q.avgScore}</td></tr>
+  `).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No data yet</td></tr>`;
+
+  const recentBody = document.getElementById('recentAttemptsBody');
+  const recent = [...scores].sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,8);
+  recentBody.innerHTML = recent.length ? recent.map(s=>{
+    const quiz = quizzes.find(q=>q.id===s.quizId);
+    return `<tr><td>${s.userName}</td><td>${quiz?quiz.title:'Deleted quiz'}</td><td>${s.score}</td><td>${new Date(s.date).toLocaleDateString()}</td></tr>`;
+  }).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No attempts yet</td></tr>`;
+});
+</script>
+</body>
+</html>
