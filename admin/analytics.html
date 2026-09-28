@@ -31,83 +31,97 @@
     <div class="admin-topbar">
       <button class="btn btn-outline btn-sm mobile-admin-toggle" id="sidebarToggle">☰ Menu</button>
       <h1>Analytics</h1>
+      <span id="adminWelcome" style="color:var(--text-light);font-size:.9rem"></span>
     </div>
 
-    <div class="stat-grid">
-      <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
-      <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
-      <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
-      <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
-    </div>
+    <div id="loadingState" style="text-align:center;padding:60px 0;color:var(--text-light)">Loading analytics...</div>
 
-    <div class="admin-card">
-      <h3>Plays by Category</h3>
-      <canvas id="categoryChart" height="90"></canvas>
-    </div>
+    <div id="analyticsContent" style="display:none">
+      <div class="stat-grid">
+        <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
+        <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
+        <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
+        <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
+      </div>
 
-    <div class="admin-card">
-      <h3>Score Distribution</h3>
-      <canvas id="scoreChart" height="90"></canvas>
-    </div>
+      <div class="admin-card">
+        <h3>Plays by Category</h3>
+        <canvas id="categoryChart" height="90"></canvas>
+      </div>
 
-    <div class="admin-card">
-      <h3>Signups Over Time (Last 14 Days)</h3>
-      <canvas id="signupChart" height="90"></canvas>
+      <div class="admin-card">
+        <h3>Score Distribution</h3>
+        <canvas id="scoreChart" height="90"></canvas>
+      </div>
+
+      <div class="admin-card">
+        <h3>Signups Over Time (Last 14 Days)</h3>
+        <canvas id="signupChart" height="90"></canvas>
+      </div>
     </div>
   </main>
 </div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', async ()=>{
   const session = await requireAdmin();
   if(!session) return;
   initAdminChrome(session);
-  const quizzes = await DB.getQuizzes();   // instead of DB.quizzes()
-  const scores  = await DB.getAllScores(); // instead of DB.scores()
-  const users   = await DB.getUsers();     // instead of DB.users()
 
+  try{
+    const [quizzes, scores, users] = await Promise.all([
+      DB.getQuizzes(), DB.getAllScores(), DB.getUsers()
+    ]);
 
-  document.getElementById('anTotalPlays').textContent = scores.length;
-  document.getElementById('anUniquePlayers').textContent = new Set(scores.map(s=>s.userId)).size;
-  document.getElementById('anCompletion').textContent = scores.length ? '100%' : '0%';
+    document.getElementById('anTotalPlays').textContent = scores.length;
+    document.getElementById('anUniquePlayers').textContent = new Set(scores.map(s=>s.userId)).size;
+    document.getElementById('anCompletion').textContent = scores.length ? '100%' : '0%';
 
-  const catCounts = {};
-  scores.forEach(s=>{
-    const quiz = quizzes.find(q=>q.id===s.quizId);
-    if(quiz) catCounts[quiz.category] = (catCounts[quiz.category]||0)+1;
-  });
-  const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
+    const catCounts = {};
+    scores.forEach(s=>{
+      const quiz = quizzes.find(q=>q.id===s.quizId);
+      if(quiz) catCounts[quiz.category] = (catCounts[quiz.category]||0)+1;
+    });
+    const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
 
-  drawBarChart('categoryChart', Object.keys(catCounts), Object.values(catCounts));
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('analyticsContent').style.display = 'block';
 
-  const buckets = {'0-50':0,'51-100':0,'101-150':0,'151-200':0,'200+':0};
-  scores.forEach(s=>{
-    if(s.score<=50) buckets['0-50']++;
-    else if(s.score<=100) buckets['51-100']++;
-    else if(s.score<=150) buckets['101-150']++;
-    else if(s.score<=200) buckets['151-200']++;
-    else buckets['200+']++;
-  });
-  drawBarChart('scoreChart', Object.keys(buckets), Object.values(buckets));
+    drawBarChart('categoryChart', Object.keys(catCounts), Object.values(catCounts));
 
-  const days = [...Array(14)].map((_,i)=>{
-    const d = new Date(); d.setDate(d.getDate()-(13-i));
-    return d.toISOString().slice(0,10);
-  });
-  const signupCounts = days.map(day => users.filter(u=>u.joined.slice(0,10)===day).length);
-  drawBarChart('signupChart', days.map(d=>d.slice(5)), signupCounts);
+    const buckets = {'0-50':0,'51-100':0,'101-150':0,'151-200':0,'200+':0};
+    scores.forEach(s=>{
+      if(s.score<=50) buckets['0-50']++;
+      else if(s.score<=100) buckets['51-100']++;
+      else if(s.score<=150) buckets['101-150']++;
+      else if(s.score<=200) buckets['151-200']++;
+      else buckets['200+']++;
+    });
+    drawBarChart('scoreChart', Object.keys(buckets), Object.values(buckets));
+
+    const days = [...Array(14)].map((_,i)=>{
+      const d = new Date(); d.setDate(d.getDate()-(13-i));
+      return d.toISOString().slice(0,10);
+    });
+    const signupCounts = days.map(day => users.filter(u=>(u.joined||'').slice(0,10)===day).length);
+    drawBarChart('signupChart', days.map(d=>d.slice(5)), signupCounts);
+  }catch(err){
+    console.error('Analytics load failed:', err);
+    document.getElementById('loadingState').textContent = 'Failed to load analytics. Check console for details.';
+  }
 });
 
-/* Lightweight canvas bar chart — no external chart library needed.
-   Uses the theme's gold accent color for all bars for visual consistency. */
+/* Lightweight canvas bar chart — no external chart library needed. */
 function drawBarChart(canvasId, labels, values){
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
