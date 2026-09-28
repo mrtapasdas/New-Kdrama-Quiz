@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics | Admin | NEW K-DRAMA Quiz</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../images/favicon.ico">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="admin-body">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <a href="index.html" class="logo"><img src="../images/logo.png" alt="NEW K-DRAMA"></a>
+    <nav class="admin-nav">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="analytics.html" class="active">📈 Analytics</a>
+      <a href="quiz-creation.html">📝 Quiz Creation</a>
+      <a href="users.html">👥 Users</a>
+      <a href="../index.html">🏠 View Site</a>
+      <a href="#" id="adminLogout">🚪 Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="btn btn-outline btn-sm mobile-admin-toggle" id="sidebarToggle">☰ Menu</button>
+      <h1>Analytics</h1>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
+      <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
+      <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
+      <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Plays by Category</h3>
+      <canvas id="categoryChart" height="90"></canvas>
+    </div>
+
+    <div class="admin-card">
+      <h3>Score Distribution</h3>
+      <canvas id="scoreChart" height="90"></canvas>
+    </div>
+
+    <div class="admin-card">
+      <h3>Signups Over Time (Last 14 Days)</h3>
+      <canvas id="signupChart" height="90"></canvas>
+    </div>
+  </main>
+</div>
+
+<script src="../js/db.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await seedDatabase();
+  requireAdmin();
+  initAdminChrome();
+
+  const quizzes = DB.quizzes();
+  const scores = DB.scores();
+  const users = DB.users();
+
+  document.getElementById('anTotalPlays').textContent = scores.length;
+  document.getElementById('anUniquePlayers').textContent = new Set(scores.map(s=>s.userId)).size;
+  document.getElementById('anCompletion').textContent = scores.length ? '100%' : '0%';
+
+  const catCounts = {};
+  scores.forEach(s=>{
+    const quiz = quizzes.find(q=>q.id===s.quizId);
+    if(quiz) catCounts[quiz.category] = (catCounts[quiz.category]||0)+1;
+  });
+  const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
+
+  drawBarChart('categoryChart', Object.keys(catCounts), Object.values(catCounts), '#6b2737');
+
+  const buckets = {'0-50':0,'51-100':0,'101-150':0,'151-200':0,'200+':0};
+  scores.forEach(s=>{
+    if(s.score<=50) buckets['0-50']++;
+    else if(s.score<=100) buckets['51-100']++;
+    else if(s.score<=150) buckets['101-150']++;
+    else if(s.score<=200) buckets['151-200']++;
+    else buckets['200+']++;
+  });
+  drawBarChart('scoreChart', Object.keys(buckets), Object.values(buckets), '#c9a961');
+
+  const days = [...Array(14)].map((_,i)=>{
+    const d = new Date(); d.setDate(d.getDate()-(13-i));
+    return d.toISOString().slice(0,10);
+  });
+  const signupCounts = days.map(day => users.filter(u=>u.joined.slice(0,10)===day).length);
+  drawBarChart('signupChart', days.map(d=>d.slice(5)), signupCounts, '#2e7d4f');
+});
+
+/* Lightweight canvas bar chart — no external chart library needed */
+function drawBarChart(canvasId, labels, values, color){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = canvas.parentElement.clientWidth - 48;
+  canvas.width = cssWidth * dpr; canvas.height = 220 * dpr;
+  canvas.style.width = cssWidth+'px'; canvas.style.height = '220px';
+  ctx.scale(dpr, dpr);
+
+  const w = cssWidth, h = 220, padding = 30;
+  const max = Math.max(...values, 1);
+  const barWidth = (w - padding*2) / (labels.length || 1) * 0.6;
+  const gap = (w - padding*2) / (labels.length || 1);
+
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = '#e8e0d4'; ctx.beginPath();
+  ctx.moveTo(padding, h-30); ctx.lineTo(w-10, h-30); ctx.stroke();
+
+  labels.forEach((label,i)=>{
+    const barHeight = ((values[i]/max) * (h-70));
+    const x = padding + i*gap + (gap-barWidth)/2;
+    const y = h-30-barHeight;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barWidth, barHeight);
+    ctx.fillStyle = '#2b2320';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(values[i]), x+barWidth/2, y-6);
+    ctx.fillText(label.length>8?label.slice(0,8)+'…':label, x+barWidth/2, h-14);
+  });
+}
+</script>
+</body>
+</html>
