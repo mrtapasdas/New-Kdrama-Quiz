@@ -156,3 +156,46 @@ async function finishQuiz(){
   const rank = getUserBestRank(scores, SESSION.userId);
   if(rank && rank > 10){ banner.style.display='block'; banner.textContent = `Your Rank: #${rank} — climb the leaderboard next time!`; }
 }
+
+// Fetches and displays 3 related quizzes at the bottom of the page
+async function loadRelatedQuizzes(currentQuizId) {
+  try {
+    const grid = document.getElementById('relatedQuizzesGrid');
+    if (!grid) return;
+
+    // Assuming you have a function like this in db.js that gets all quizzes for your homepage
+    const allQuizzes = await DB.getAllQuizzes(); 
+    
+    // Remove the current quiz from the list and shuffle the array
+    const filteredQuizzes = allQuizzes.filter(q => q.id !== currentQuizId);
+    const shuffled = filteredQuizzes.sort(() => 0.5 - Math.random());
+    const related = shuffled.slice(0, 3); // Grab 3 quizzes
+
+    if (related.length === 0) {
+      grid.innerHTML = '<p class="empty-state">More quizzes coming soon!</p>';
+      return;
+    }
+
+    // Render them using your existing quiz-card HTML structure
+    grid.innerHTML = related.map(q => `
+      <a href="quiz.html?id=${q.id}" class="quiz-card">
+        <div class="quiz-thumb">
+          <span class="tag">${escapeHtml(q.category || 'Trivia')}</span>
+          <img src="${escapeHtml(q.image || 'images/default-thumb.jpg')}" alt="${escapeHtml(q.title)}">
+        </div>
+        <div class="quiz-body">
+          <h3>${escapeHtml(q.title)}</h3>
+          <p>${escapeHtml(q.description)}</p>
+          <div class="quiz-meta">
+            <span>💬 ${q.questions ? q.questions.length : 0} Qs</span>
+            <span>⏱ ${q.timePerQuestion || 15}s</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  } catch (err) {
+    console.error('Failed to load related quizzes:', err);
+    const grid = document.getElementById('relatedQuizzesGrid');
+    if(grid) grid.innerHTML = '<p class="empty-state">Could not load related quizzes right now.</p>';
+  }
+}
