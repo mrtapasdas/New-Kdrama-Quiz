@@ -80,22 +80,29 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* ===================== HERO ===================== */
 .hero{
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
-  color:#fff;padding:80px 20px 90px;text-align:center;
+  background:linear-gradient(135deg,#000 0%,#1a1a1a 55%,#000 100%);
+  color:#fff;padding:90px 20px 100px;text-align:center;
 }
-.hero::before{
-  content:"";position:absolute;inset:0;opacity:.15;
-  background-image:radial-gradient(circle at 20% 30%,var(--accent) 0,transparent 40%),
-                    radial-gradient(circle at 80% 70%,var(--accent) 0,transparent 40%);
+.hero-korean-bg{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
+  gap:22px 40px;opacity:.14;transform:rotate(-4deg) scale(1.2);
 }
-.hero-content{position:relative;max-width:720px;margin:0 auto}
-.hero-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
-  padding:6px 16px;border-radius:50px;font-size:.8rem;letter-spacing:.5px;margin-bottom:18px}
+.hero-korean-bg span{
+  font-family:var(--font-kr);font-weight:700;color:var(--accent);
+  font-size:clamp(1.3rem,3vw,2.4rem);white-space:nowrap;
+}
+.hero-content{position:relative;z-index:1;max-width:720px;margin:0 auto}
+.hero-badge{
+  display:inline-block;background:rgba(212,175,55,.15);border:1px solid var(--accent);
+  color:var(--accent-light);padding:6px 16px;border-radius:50px;font-size:.8rem;
+  letter-spacing:.5px;margin-bottom:18px;
+}
 .hero h1{font-family:var(--font-serif);font-size:clamp(2rem,5vw,3.2rem);line-height:1.15;margin-bottom:16px}
+.hero-stat b{color:var(--accent)}
 .hero p{font-size:1.05rem;opacity:.9;margin-bottom:30px}
 .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.hero-stats{display:flex;justify-content:center;gap:40px;margin-top:50px;flex-wrap:wrap}
-.hero-stat b{display:block;font-size:1.8rem;font-family:var(--font-serif)}
+.hero-stats{display:flex;justify-content:center;gap:40px;margin-top:50px;flex-wrap:wrap}}
 .hero-stat span{font-size:.85rem;opacity:.8}
 
 /* ===================== SECTIONS ===================== */
