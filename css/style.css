@@ -80,6 +80,53 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700}
 .nav-toggle{display:none;flex-direction:column;gap:5px;padding:8px}
 .nav-toggle span{width:24px;height:2px;background:var(--accent)}
+/* ===================== HEADER — MOBILE RESPONSIVE ===================== */
+@media (max-width: 768px){
+  .header-inner{ padding:10px 14px; gap:8px; }
+
+  .logo img{ height:26px; }
+  .logo{ font-size:.9rem; gap:6px; }
+
+  .nav-toggle{ display:flex; order:3; }
+
+  .main-nav{
+    display:none;
+    position:absolute;
+    top:100%; left:0; right:0;
+    background:var(--bg-card);
+    border-bottom:1px solid var(--border);
+    flex-direction:column;
+    align-items:flex-start;
+    gap:16px;
+    padding:20px;
+    box-shadow:var(--shadow-lg);
+  }
+  .main-nav.open{ display:flex; }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    order:2;
+    flex-shrink:0;
+  }
+
+  .user-chip{ gap:6px; }
+  .user-chip .user-name{ display:none; } /* hide name text on mobile, keep avatar only */
+  .avatar{ width:30px; height:30px; font-size:.8rem; }
+
+  .admin-btn, .logout-btn{
+    padding:6px 10px;
+    font-size:.75rem;
+  }
+}
+
+@media (max-width: 380px){
+  .admin-btn{ padding:6px 8px; font-size:0; } /* icon-only on very small screens */
+  .admin-btn::before{ content:"⚙"; font-size:1rem; }
+  .logout-btn{ padding:6px 8px; font-size:0; }
+  .logout-btn::before{ content:"🚪"; font-size:1rem; }
+}
 
 /* ===================== HERO ===================== */
 .hero{
