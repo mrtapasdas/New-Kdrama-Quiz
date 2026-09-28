@@ -15,7 +15,6 @@
 <link rel="stylesheet" href="css/style.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 
-<script src="js/db.js"></script>
 <script>
   /* Redirect guard: if already logged in, skip this page entirely */
   (function(){
@@ -77,6 +76,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/layout.js"></script>
@@ -85,8 +85,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
 
   const params = new URLSearchParams(location.search);
-  const redirect = params.get('redirect');
+  const redirect = params.get('redirect');   // already decoded by URLSearchParams
   if(params.get('mode')==='signup') switchTab('signup');
+
+  /* Only follow redirects that stay on this site (blocks ?redirect=https://evil.com). */
+  function safeRedirect(target){
+    if(!target) return 'index.html';
+    try{ if(new URL(target, location.href).origin === location.origin) return target; }catch(e){}
+    return 'index.html';
+  }
+
+  /* Already signed in? Skip this page. (Firebase Auth session, not the old localStorage one.) */
+  getSession().then(sess=>{ if(sess) location.replace(safeRedirect(redirect)); }).catch(err=>console.error('Session check failed:', err));
 
   document.querySelectorAll('.auth-tab').forEach(t=>t.addEventListener('click', ()=>switchTab(t.dataset.tab)));
   function switchTab(tab){
@@ -103,7 +113,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function showSuccess(msg){ const el=document.getElementById('formSuccess'); el.textContent=msg; el.style.display='block'; }
 
   function afterAuthRedirect(){
-    window.location.href = redirect ? decodeURIComponent(redirect) : 'index.html';
+    window.location.href = safeRedirect(redirect);
   }
 
   document.getElementById('loginForm').addEventListener('submit', async (e)=>{
