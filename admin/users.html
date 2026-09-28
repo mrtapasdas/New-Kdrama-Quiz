@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Users | Admin | NEW K-DRAMA Quiz</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../images/favicon.ico">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="admin-body">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <a href="index.html" class="logo"><img src="../images/logo.png" alt="NEW K-DRAMA"></a>
+    <nav class="admin-nav">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="analytics.html">📈 Analytics</a>
+      <a href="quiz-creation.html">📝 Quiz Creation</a>
+      <a href="users.html" class="active">👥 Users</a>
+      <a href="../index.html">🏠 View Site</a>
+      <a href="#" id="adminLogout">🚪 Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="btn btn-outline btn-sm mobile-admin-toggle" id="sidebarToggle">☰ Menu</button>
+      <h1>Users</h1>
+      <input type="search" id="userSearch" placeholder="Search by name or email..." style="padding:10px 16px;border:1.5px solid var(--border);border-radius:50px;min-width:220px">
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><span>Total Users</span><b id="uTotal">0</b></div>
+      <div class="stat-card"><span>Admins</span><b id="uAdmins">0</b></div>
+      <div class="stat-card"><span>Active Players</span><b id="uActive">0</b></div>
+    </div>
+
+    <div class="admin-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Quizzes Played</th><th>Actions</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/db.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await seedDatabase();
+  requireAdmin();
+  initAdminChrome();
+  renderUsers();
+  document.getElementById('userSearch').addEventListener('input', e=>renderUsers(e.target.value));
+});
+
+function renderUsers(filter=''){
+  const users = DB.users();
+  const scores = DB.scores();
+  const term = filter.trim().toLowerCase();
+
+  document.getElementById('uTotal').textContent = users.length;
+  document.getElementById('uAdmins').textContent = users.filter(u=>u.isAdmin).length;
+  document.getElementById('uActive').textContent = new Set(scores.map(s=>s.userId)).size;
+
+  const filtered = users.filter(u=> u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
+  const body = document.getElementById('usersBody');
+  body.innerHTML = filtered.length ? filtered.map(u=>{
+    const played = scores.filter(s=>s.userId===u.id).length;
+    return `<tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${u.isAdmin?'badge-admin':'badge-user'}">${u.isAdmin?'Admin':'User'}</span></td>
+      <td>${new Date(u.joined).toLocaleDateString()}</td>
+      <td>${played}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="toggleAdmin('${u.id}')">${u.isAdmin?'Remove Admin':'Make Admin'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text-light)">No users found</td></tr>`;
+}
+
+function toggleAdmin(id){
+  const users = DB.users();
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  u.isAdmin = !u.isAdmin;
+  DB.saveUsers(users);
+  renderUsers(document.getElementById('userSearch').value);
+  showToast(`${u.name} is ${u.isAdmin?'now an admin':'no longer an admin'}.`);
+}
+
+function deleteUser(id){
+  const session = getSession();
+  if(id === session.userId){ showToast("You can't delete your own account while logged in."); return; }
+  if(!confirm('Delete this user permanently?')) return;
+  DB.saveUsers(DB.users().filter(u=>u.id!==id));
+  renderUsers(document.getElementById('userSearch').value);
+  showToast('User deleted.');
+}
+</script>
+</body>
+</html>
