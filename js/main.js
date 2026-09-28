@@ -1,20 +1,7 @@
 /* ===================== main.js ===================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // 1) Header, nav, footer year — must ALWAYS work, independent of storage.
-  try{
-    renderHeaderAuth();
-  }catch(err){
-    console.error('Header render failed:', err);
-  }
+  try{ renderLayout(''); }catch(err){ console.error('Layout render failed:', err); }
 
-  const yearEl = document.getElementById('year');
-  if(yearEl) yearEl.textContent = new Date().getFullYear();
-
-  document.getElementById('navToggle')?.addEventListener('click', ()=>{
-    document.getElementById('mainNav').classList.toggle('open');
-  });
-
-  // 2) Quiz data — isolated so a failure here can't take down the header.
   initHomeQuizzes().catch(err=>{
     console.error('Quiz loading failed:', err);
     const grid = document.getElementById('quizGrid');
@@ -65,16 +52,15 @@ async function initHomeQuizzes(){
   document.getElementById('statCategories').textContent = new Set(quizzes.map(q=>q.category)).size;
 }
 
-/* Shared helpers */
+/* Shared helpers used by main.js and quiz.js */
 function getTopScores(quizId, limit=10){
   return DB.scores()
     .filter(s=>s.quizId===quizId)
     .sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken)
     .slice(0, limit);
 }
-function getUserRank(quizId, userId){
+function getUserBestRank(quizId, userId){
   const all = DB.scores().filter(s=>s.quizId===quizId).sort((a,b)=> b.score-a.score || a.timeTaken-b.timeTaken);
-  const idx = all.findIndex(s=>s.userId===userId && s.__isLatest);
+  const idx = all.findIndex(s=>s.userId===userId);
   return idx===-1 ? null : idx+1;
 }
-
