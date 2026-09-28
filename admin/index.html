@@ -34,30 +34,34 @@
       <span id="adminWelcome" style="color:var(--text-light);font-size:.9rem"></span>
     </div>
 
-    <div class="stat-grid">
-      <div class="stat-card"><span>Total Quizzes</span><b id="statTotalQuizzes">0</b></div>
-      <div class="stat-card"><span>Total Users</span><b id="statTotalUsers">0</b></div>
-      <div class="stat-card"><span>Quiz Attempts</span><b id="statTotalAttempts">0</b></div>
-      <div class="stat-card"><span>Avg. Score</span><b id="statAvgScore">0</b></div>
-    </div>
+    <div id="loadingState" style="text-align:center;padding:60px 0;color:var(--text-light)">Loading dashboard...</div>
 
-    <div class="admin-card">
-      <h3>Most Played Quizzes</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Quiz</th><th>Category</th><th>Attempts</th><th>Avg Score</th></tr></thead>
-          <tbody id="popularQuizzesBody"></tbody>
-        </table>
+    <div id="dashboardContent" style="display:none">
+      <div class="stat-grid">
+        <div class="stat-card"><span>Total Quizzes</span><b id="statTotalQuizzes">0</b></div>
+        <div class="stat-card"><span>Total Users</span><b id="statTotalUsers">0</b></div>
+        <div class="stat-card"><span>Quiz Attempts</span><b id="statTotalAttempts">0</b></div>
+        <div class="stat-card"><span>Avg. Score</span><b id="statAvgScore">0</b></div>
       </div>
-    </div>
 
-    <div class="admin-card">
-      <h3>Recent Quiz Attempts</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>User</th><th>Quiz</th><th>Score</th><th>Date</th></tr></thead>
-          <tbody id="recentAttemptsBody"></tbody>
-        </table>
+      <div class="admin-card">
+        <h3>Most Played Quizzes</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Quiz</th><th>Category</th><th>Attempts</th><th>Avg Score</th></tr></thead>
+            <tbody id="popularQuizzesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Recent Quiz Attempts</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Quiz</th><th>Score</th><th>Date</th></tr></thead>
+            <tbody id="recentAttemptsBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>
@@ -65,45 +69,55 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', async ()=>{
   const session = await requireAdmin();
   if(!session) return;
   initAdminChrome(session);
-  const quizzes = await DB.getQuizzes();   // instead of DB.quizzes()
-  const scores  = await DB.getAllScores(); // instead of DB.scores()
-  const users   = await DB.getUsers();     // instead of DB.users()
 
+  try{
+    const [quizzes, scores, users] = await Promise.all([
+      DB.getQuizzes(), DB.getAllScores(), DB.getUsers()
+    ]);
 
-  document.getElementById('statTotalQuizzes').textContent = quizzes.length;
-  document.getElementById('statTotalUsers').textContent = users.length;
-  document.getElementById('statTotalAttempts').textContent = scores.length;
-  const avg = scores.length ? Math.round(scores.reduce((a,s)=>a+s.score,0)/scores.length) : 0;
-  document.getElementById('statAvgScore').textContent = avg;
+    document.getElementById('statTotalQuizzes').textContent = quizzes.length;
+    document.getElementById('statTotalUsers').textContent = users.length;
+    document.getElementById('statTotalAttempts').textContent = scores.length;
+    const avg = scores.length ? Math.round(scores.reduce((a,s)=>a+s.score,0)/scores.length) : 0;
+    document.getElementById('statAvgScore').textContent = avg;
 
-  const popularBody = document.getElementById('popularQuizzesBody');
-  const stats = quizzes.map(q=>{
-    const attempts = scores.filter(s=>s.quizId===q.id);
-    const avgScore = attempts.length ? Math.round(attempts.reduce((a,s)=>a+s.score,0)/attempts.length) : 0;
-    return { ...q, attemptCount:attempts.length, avgScore };
-  }).sort((a,b)=>b.attemptCount-a.attemptCount).slice(0,6);
-  popularBody.innerHTML = stats.length ? stats.map(q=>`
-    <tr><td>${q.title}</td><td>${q.category}</td><td>${q.attemptCount}</td><td>${q.avgScore}</td></tr>
-  `).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No data yet</td></tr>`;
+    const popularBody = document.getElementById('popularQuizzesBody');
+    const stats = quizzes.map(q=>{
+      const attempts = scores.filter(s=>s.quizId===q.id);
+      const avgScore = attempts.length ? Math.round(attempts.reduce((a,s)=>a+s.score,0)/attempts.length) : 0;
+      return { ...q, attemptCount:attempts.length, avgScore };
+    }).sort((a,b)=>b.attemptCount-a.attemptCount).slice(0,6);
+    popularBody.innerHTML = stats.length ? stats.map(q=>`
+      <tr><td>${q.title}</td><td>${q.category}</td><td>${q.attemptCount}</td><td>${q.avgScore}</td></tr>
+    `).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No data yet</td></tr>`;
 
-  const recentBody = document.getElementById('recentAttemptsBody');
-  const recent = [...scores].sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,8);
-  recentBody.innerHTML = recent.length ? recent.map(s=>{
-    const quiz = quizzes.find(q=>q.id===s.quizId);
-    return `<tr><td>${s.userName}</td><td>${quiz?quiz.title:'Deleted quiz'}</td><td>${s.score}</td><td>${new Date(s.date).toLocaleDateString()}</td></tr>`;
-  }).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No attempts yet</td></tr>`;
+    const recentBody = document.getElementById('recentAttemptsBody');
+    const recent = [...scores].sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,8);
+    recentBody.innerHTML = recent.length ? recent.map(s=>{
+      const quiz = quizzes.find(q=>q.id===s.quizId);
+      return `<tr><td>${s.userName}</td><td>${quiz?quiz.title:'Deleted quiz'}</td><td>${s.score}</td><td>${new Date(s.date).toLocaleDateString()}</td></tr>`;
+    }).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No attempts yet</td></tr>`;
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+  }catch(err){
+    console.error('Dashboard load failed:', err);
+    document.getElementById('loadingState').textContent = 'Failed to load dashboard data. Check console for details.';
+  }
 });
 </script>
 </body>
