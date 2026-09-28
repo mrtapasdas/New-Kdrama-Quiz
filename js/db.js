@@ -1,8 +1,7 @@
 /* ===================== db.js =====================
    Local "database" using localStorage.
    Swap this file's internals later for real API calls
-   (Firebase/Supabase) without changing other JS files,
-   since every other file only calls DB.* functions. */
+   (Firebase/Supabase) without changing other JS files. */
 
 const DB_KEYS = {
   USERS:'kd_users', SESSION:'kd_session',
