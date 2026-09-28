@@ -6,6 +6,7 @@
 <title id="pageTitle">Play Quiz | NEW K-DRAMA Quiz</title>
 <meta name="description" content="Play this K-drama quiz, beat the timer, and see if you make the Top 10 leaderboard.">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,17 +16,7 @@
 </head>
 <body>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="logo"><img src="images/logo.png" alt="NEW K-DRAMA logo"></a>
-    <nav class="main-nav" id="mainNav">
-      <a href="index.html">Home</a>
-      <a href="index.html#quizzes">Quizzes</a>
-    </nav>
-    <div class="header-actions" id="headerAuthArea"></div>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  </div>
-</header>
+<div id="site-header"></div>
 
 <main class="quiz-shell">
 
@@ -48,6 +39,7 @@
     <button class="btn btn-primary btn-block" id="startBtn">Start Quiz</button>
   </section>
 
+  <!-- Ad shown on the start screen -->
   <div class="ad-slot" id="startAd">
     <span class="ad-label">Advertisement</span>
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="4444444444" data-ad-format="auto" data-full-width-responsive="true"></ins>
@@ -64,11 +56,11 @@
   </section>
 
   <!-- Ad shown while answering questions -->
-<div class="ad-slot" id="playAd" style="display:none">
-  <span class="ad-label">Advertisement</span>
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="6666666666" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
+  <div class="ad-slot" id="playAd" style="display:none">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="6666666666" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
 
   <!-- RESULT SCREEN -->
   <section class="quiz-panel" id="resultScreen" style="display:none">
@@ -89,6 +81,7 @@
     </div>
   </section>
 
+  <!-- Ad shown on the result screen -->
   <div class="ad-slot" id="resultAd" style="display:none">
     <span class="ad-label">Advertisement</span>
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="5555555555" data-ad-format="auto" data-full-width-responsive="true"></ins>
@@ -97,12 +90,11 @@
 
 </main>
 
-<footer class="site-footer">
-  <div class="container footer-bottom">© <span id="year"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
-</footer>
+<div id="site-footer"></div>
 
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/layout.js"></script>
 <script src="js/main.js"></script>
 <script src="js/quiz.js"></script>
 </body>
