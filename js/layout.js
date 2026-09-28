@@ -77,7 +77,7 @@ function renderLayout(pathPrefix=''){
               <a href="https://www.newkdrama.com/p/terms-of-use.html" target="_blank" rel="noopener">Terms of Use</a>
             </div>
           </div>
-          <div class="footer-bottom">© <span id="footerYear"></span> NEW K-DRAMA Quiz. All rights reserved.</div>
+          <div class="footer-bottom">© 2025 - <span id="footerYear"></span> NEW K-DRAMA. All rights reserved.</div>
         </div>
       </footer>`;
     const yearEl = document.getElementById('footerYear');
