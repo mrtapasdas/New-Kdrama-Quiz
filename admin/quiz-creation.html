@@ -79,6 +79,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
@@ -89,12 +90,20 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if(!session) return;
   initAdminChrome(session);
 
-  await renderQuizList();
-
   document.getElementById('newQuizBtn').addEventListener('click', ()=>openEditor());
   document.getElementById('cancelEditBtn').addEventListener('click', closeEditor);
   document.getElementById('addQuestionBtn').addEventListener('click', ()=>addQuestionBlock());
   document.getElementById('saveQuizBtn').addEventListener('click', saveQuiz);
+
+  // One delegated listener for Edit / Delete (reads the real Firestore document ID from data-id).
+  document.getElementById('quizListBody').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    if(btn.dataset.action === 'edit') editQuiz(btn.dataset.id);
+    if(btn.dataset.action === 'delete') deleteQuiz(btn.dataset.id);
+  });
+
+  await renderQuizList();
 });
 
 async function renderQuizList(){
@@ -104,18 +113,18 @@ async function renderQuizList(){
     window.__ALL_QUIZZES__ = quizzes; // cache for edit lookups
     body.innerHTML = quizzes.length ? quizzes.map(q=>`
       <tr>
-        <td>${q.title}</td>
-        <td>${q.category}</td>
+        <td>${escapeHtml(q.title)}</td>
+        <td>${escapeHtml(q.category)}</td>
         <td>${q.questions.length}</td>
-        <td>${q.difficulty}</td>
+        <td>${escapeHtml(q.difficulty)}</td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="editQuiz('${q.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteQuiz('${q.id}')">Delete</button>
+          <button class="btn btn-outline btn-sm" data-action="edit" data-id="${escapeHtml(q.id)}">Edit</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" data-id="${escapeHtml(q.id)}">Delete</button>
         </td>
       </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text-light)">No quizzes yet — create one!</td></tr>`;
   }catch(err){
     console.error('Failed to load quizzes:', err);
-    body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger)">Failed to load quizzes.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger)">Failed to load quizzes (${escapeHtml(err.code || err.message)}).</td></tr>`;
   }
 }
 
@@ -143,25 +152,29 @@ function closeEditor(){
   document.getElementById('editorCard').style.display = 'none';
 }
 
+let QUESTION_UID = 0;
 function addQuestionBlock(data=null){
   const wrap = document.getElementById('questionsWrap');
-  const idx = wrap.children.length;
+  const group = `correct-${++QUESTION_UID}`;           // one radio group per question, computed once
+  const options = data && Array.isArray(data.options) ? data.options : [];
   const block = document.createElement('div');
   block.className = 'question-block';
   block.innerHTML = `
-    <button type="button" class="remove-q" onclick="this.parentElement.remove()">✕ Remove</button>
-    <div class="form-group"><label>Question ${idx+1}</label><input type="text" class="q-text" value="${data?escapeHtml(data.q):''}" required></div>
+    <button type="button" class="remove-q">✕ Remove</button>
+    <div class="form-group"><label class="q-label"></label><input type="text" class="q-text" value="${data ? escapeHtml(data.q) : ''}" required></div>
     ${[0,1,2,3].map(i=>`
       <div class="opt-row">
-        <input type="radio" name="correct-${Date.now()}-${idx}" class="q-correct" ${data && data.answer===i ? 'checked':''}>
-        <input type="text" class="q-opt" placeholder="Option ${i+1}" value="${data?escapeHtml(data.options[i]||''):''}" required>
+        <input type="radio" name="${group}" class="q-correct" ${data && Number(data.answer)===i ? 'checked' : ''}>
+        <input type="text" class="q-opt" placeholder="Option ${i+1}" value="${escapeHtml(options[i] || '')}" required>
       </div>`).join('')}
   `;
+  block.querySelector('.remove-q').addEventListener('click', ()=>{ block.remove(); renumberQuestions(); });
   wrap.appendChild(block);
+  renumberQuestions();
 }
 
-function escapeHtml(str){
-  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+function renumberQuestions(){
+  document.querySelectorAll('#questionsWrap .question-block .q-label').forEach((l,i)=>{ l.textContent = `Question ${i+1}`; });
 }
 
 async function saveQuiz(){
@@ -170,7 +183,7 @@ async function saveQuiz(){
   const difficulty = document.getElementById('qDifficulty').value;
   const thumbnail = document.getElementById('qThumb').value.trim() || `https://picsum.photos/seed/${encodeURIComponent(title)}/400/250`;
   const description = document.getElementById('qDesc').value.trim();
-  const timePerQuestion = parseInt(document.getElementById('qTime').value) || 20;
+  const timePerQuestion = parseInt(document.getElementById('qTime').value, 10) || 20;
 
   const questionBlocks = document.querySelectorAll('.question-block');
   const questions = [];
@@ -195,13 +208,14 @@ async function saveQuiz(){
   saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
 
   try{
+    // NOTE: db.js never writes `id` into the document; the Firestore document ID is the quiz id.
     await DB.saveQuiz({ id: editId, title, category, difficulty, thumbnail, description, timePerQuestion, questions });
     showToast(editId ? 'Quiz updated successfully!' : 'Quiz created successfully!');
     closeEditor();
     await renderQuizList();
   }catch(err){
     console.error('Save quiz failed:', err);
-    showToast('Failed to save quiz. Check console for details.');
+    showToast(`Failed to save quiz: ${err.code || err.message}`);
   }finally{
     saveBtn.disabled = false; saveBtn.textContent = 'Save Quiz';
   }
@@ -210,6 +224,7 @@ async function saveQuiz(){
 function editQuiz(id){
   const quiz = (window.__ALL_QUIZZES__ || []).find(q=>q.id===id);
   if(quiz) openEditor(quiz);
+  else showToast('Could not find that quiz. Try refreshing the page.');
 }
 
 async function deleteQuiz(id){
@@ -220,7 +235,7 @@ async function deleteQuiz(id){
     showToast('Quiz deleted.');
   }catch(err){
     console.error('Delete quiz failed:', err);
-    showToast('Failed to delete quiz.');
+    showToast(`Failed to delete quiz: ${err.code || err.message}`);
   }
 }
 </script>

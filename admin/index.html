@@ -74,6 +74,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
@@ -102,14 +103,14 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       return { ...q, attemptCount:attempts.length, avgScore };
     }).sort((a,b)=>b.attemptCount-a.attemptCount).slice(0,6);
     popularBody.innerHTML = stats.length ? stats.map(q=>`
-      <tr><td>${q.title}</td><td>${q.category}</td><td>${q.attemptCount}</td><td>${q.avgScore}</td></tr>
+      <tr><td>${escapeHtml(q.title)}</td><td>${escapeHtml(q.category)}</td><td>${q.attemptCount}</td><td>${q.avgScore}</td></tr>
     `).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No data yet</td></tr>`;
 
     const recentBody = document.getElementById('recentAttemptsBody');
     const recent = [...scores].sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,8);
     recentBody.innerHTML = recent.length ? recent.map(s=>{
       const quiz = quizzes.find(q=>q.id===s.quizId);
-      return `<tr><td>${s.userName}</td><td>${quiz?quiz.title:'Deleted quiz'}</td><td>${s.score}</td><td>${new Date(s.date).toLocaleDateString()}</td></tr>`;
+      return `<tr><td>${escapeHtml(s.userName)}</td><td>${escapeHtml(quiz?quiz.title:'Deleted quiz')}</td><td>${s.score}</td><td>${new Date(s.date).toLocaleDateString()}</td></tr>`;
     }).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text-light)">No attempts yet</td></tr>`;
 
     document.getElementById('loadingState').style.display = 'none';

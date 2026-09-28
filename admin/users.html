@@ -60,6 +60,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
@@ -106,8 +107,8 @@ function renderUsers(filter=''){
   body.innerHTML = filtered.length ? filtered.map(u=>{
     const played = CACHED_SCORES.filter(s=>s.userId===u.id).length;
     return `<tr>
-      <td>${u.name || '—'}</td>
-      <td>${u.email || '—'}</td>
+      <td>${escapeHtml(u.name || '—')}</td>
+      <td>${escapeHtml(u.email || '—')}</td>
       <td><span class="badge ${u.isAdmin?'badge-admin':'badge-user'}">${u.isAdmin?'Admin':'User'}</span></td>
       <td>${u.joined ? new Date(u.joined).toLocaleDateString() : '—'}</td>
       <td>${played}</td>
@@ -126,7 +127,7 @@ async function toggleAdmin(id){
     await DB.updateUser(id, { isAdmin: !u.isAdmin });
     u.isAdmin = !u.isAdmin;
     renderUsers(document.getElementById('userSearch').value);
-    showToast(`${u.name} is ${u.isAdmin?'now an admin':'no longer an admin'}.`);
+    showToast(`${u.name || 'User'} is ${u.isAdmin?'now an admin':'no longer an admin'}.`);
   }catch(err){
     console.error('Toggle admin failed:', err);
     showToast('Failed to update user. Check console for details.');
