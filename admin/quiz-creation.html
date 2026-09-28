@@ -63,7 +63,9 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Title</th><th>Category</th><th>Questions</th><th>Difficulty</th><th>Actions</th></tr></thead>
-          <tbody id="quizListBody"></tbody>
+          <tbody id="quizListBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-light)">Loading quizzes...</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -72,19 +74,22 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/admin.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', async ()=>{
-  await seedDatabase();
-  requireAdmin();
-  initAdminChrome();
-  renderQuizList();
+  const session = await requireAdmin();
+  if(!session) return;
+  initAdminChrome(session);
+
+  await renderQuizList();
 
   document.getElementById('newQuizBtn').addEventListener('click', ()=>openEditor());
   document.getElementById('cancelEditBtn').addEventListener('click', closeEditor);
@@ -92,20 +97,26 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('saveQuizBtn').addEventListener('click', saveQuiz);
 });
 
-function renderQuizList(){
-  const quizzes = DB.quizzes();
+async function renderQuizList(){
   const body = document.getElementById('quizListBody');
-  body.innerHTML = quizzes.length ? quizzes.map(q=>`
-    <tr>
-      <td>${q.title}</td>
-      <td>${q.category}</td>
-      <td>${q.questions.length}</td>
-      <td>${q.difficulty}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editQuiz('${q.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteQuiz('${q.id}')">Delete</button>
-      </td>
-    </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text-light)">No quizzes yet — create one!</td></tr>`;
+  try{
+    const quizzes = await DB.getQuizzes();
+    window.__ALL_QUIZZES__ = quizzes; // cache for edit lookups
+    body.innerHTML = quizzes.length ? quizzes.map(q=>`
+      <tr>
+        <td>${q.title}</td>
+        <td>${q.category}</td>
+        <td>${q.questions.length}</td>
+        <td>${q.difficulty}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editQuiz('${q.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteQuiz('${q.id}')">Delete</button>
+        </td>
+      </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text-light)">No quizzes yet — create one!</td></tr>`;
+  }catch(err){
+    console.error('Failed to load quizzes:', err);
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger)">Failed to load quizzes.</td></tr>`;
+  }
 }
 
 function openEditor(quiz=null){
@@ -153,7 +164,7 @@ function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
 }
 
-function saveQuiz(){
+async function saveQuiz(){
   const title = document.getElementById('qTitle').value.trim();
   const category = document.getElementById('qCategory').value.trim();
   const difficulty = document.getElementById('qDifficulty').value;
@@ -179,33 +190,38 @@ function saveQuiz(){
     return;
   }
 
-  const quizzes = DB.quizzes();
-  const editId = document.getElementById('editQuizId').value;
+  const editId = document.getElementById('editQuizId').value || null;
+  const saveBtn = document.getElementById('saveQuizBtn');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
 
-  if(editId){
-    const idx = quizzes.findIndex(q=>q.id===editId);
-    quizzes[idx] = { ...quizzes[idx], title, category, difficulty, thumbnail, description, timePerQuestion, questions };
-    showToast('Quiz updated successfully!');
-  } else {
-    quizzes.push({ id: uid('q'), title, category, difficulty, thumbnail, description, timePerQuestion, questions });
-    showToast('Quiz created successfully!');
+  try{
+    await DB.saveQuiz({ id: editId, title, category, difficulty, thumbnail, description, timePerQuestion, questions });
+    showToast(editId ? 'Quiz updated successfully!' : 'Quiz created successfully!');
+    closeEditor();
+    await renderQuizList();
+  }catch(err){
+    console.error('Save quiz failed:', err);
+    showToast('Failed to save quiz. Check console for details.');
+  }finally{
+    saveBtn.disabled = false; saveBtn.textContent = 'Save Quiz';
   }
-
-  DB.saveQuizzes(quizzes);
-  closeEditor();
-  renderQuizList();
 }
 
 function editQuiz(id){
-  const quiz = DB.quizzes().find(q=>q.id===id);
+  const quiz = (window.__ALL_QUIZZES__ || []).find(q=>q.id===id);
   if(quiz) openEditor(quiz);
 }
 
-function deleteQuiz(id){
+async function deleteQuiz(id){
   if(!confirm('Delete this quiz permanently? This cannot be undone.')) return;
-  DB.saveQuizzes(DB.quizzes().filter(q=>q.id!==id));
-  renderQuizList();
-  showToast('Quiz deleted.');
+  try{
+    await DB.deleteQuiz(id);
+    await renderQuizList();
+    showToast('Quiz deleted.');
+  }catch(err){
+    console.error('Delete quiz failed:', err);
+    showToast('Failed to delete quiz.');
+  }
 }
 </script>
 </body>
