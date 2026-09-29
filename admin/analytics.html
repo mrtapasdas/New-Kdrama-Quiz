@@ -39,15 +39,16 @@
     <div id="analyticsContent" style="display:none">
       <div class="stat-grid">
         <div class="stat-card"><span>Daily Plays</span><b id="anTodayPlays">0</b></div>
+        <div class="stat-card"><span>Weekly Plays</span><b id="anWeeklyPlays">0</b></div>
         <div class="stat-card"><span>Monthly Plays</span><b id="anMonthlyPlays">0</b></div>
         <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
         <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
-        <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
         <div class="stat-card"><span>Daily Users</span><b id="anTodayUsers">0</b></div>
+        <div class="stat-card"><span>Weekly Users</span><b id="anWeeklyUsers">0</b></div>
         <div class="stat-card"><span>Monthly Users</span><b id="anMonthlyUsers">0</b></div>
-        <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
-        <div class="stat-card"><span>Daily Traffic</span><b id="anTodayVisitors">0</b></div>
-        <div class="stat-card"><span>Total Traffic</span><b id="anTotalVisitors">0</b></div>
+        <div class="stat-card"><span>Total Users</span><b id="anUniquePlayers">0</b></div>
+        <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
+        
       </div>
 
       <div class="admin-card">
@@ -101,52 +102,40 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
 
+    // --- NEW LOGIC: Calculate Today, Weekly, and Monthly Metrics ---
     const now = new Date();
-    const todayStr = now.toISOString().slice(0,10);
-    const monthStr = now.toISOString().slice(0,7);
+    const todayStr = now.toISOString().slice(0,10); // Format: YYYY-MM-DD
+    const monthStr = now.toISOString().slice(0,7);  // Format: YYYY-MM
 
-    let todayUsers = 0, monthlyUsers = 0;
+    // Create a 7-day rolling boundary for weekly stats
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    const weekStr = sevenDaysAgo.toISOString();
+
+    let todayUsers = 0, weeklyUsers = 0, monthlyUsers = 0;
     users.forEach(u => {
       const joinDate = u.joined || '';
       if (joinDate.startsWith(todayStr)) todayUsers++;
+      if (joinDate >= weekStr) weeklyUsers++;
       if (joinDate.startsWith(monthStr)) monthlyUsers++;
     });
 
-    let todayPlays = 0, monthlyPlays = 0;
+    let todayPlays = 0, weeklyPlays = 0, monthlyPlays = 0;
     scores.forEach(s => {
       const playDate = s.date || '';
       if (playDate.startsWith(todayStr)) todayPlays++;
+      if (playDate >= weekStr) weeklyPlays++;
       if (playDate.startsWith(monthStr)) monthlyPlays++;
     });
 
     document.getElementById('anTodayUsers').textContent = todayUsers;
+    document.getElementById('anWeeklyUsers').textContent = weeklyUsers;
     document.getElementById('anMonthlyUsers').textContent = monthlyUsers;
-    document.getElementById('anTodayPlays').textContent = todayPlays;
-    document.getElementById('anMonthlyPlays').textContent = monthlyPlays;
-
-    // --- NEW VISITOR METRICS LOGIC (Non-User Site Traffic) ---
-    let todayVisitors = 0;
-    let totalVisitors = 0;
     
-    try {
-      // Calling Firestore directly to avoid editing db.js
-      const db = firebase.firestore();
-      const visitorsSnap = await db.collection('visitors').get();
-      totalVisitors = visitorsSnap.size;
-      
-      visitorsSnap.forEach(doc => {
-        const v = doc.data();
-        if ((v.date || '').startsWith(todayStr)) {
-          todayVisitors++;
-        }
-      });
-    } catch(err) {
-      console.warn("Visitors collection missing or inaccessible:", err);
-    }
-
-    document.getElementById('anTodayVisitors').textContent = totalVisitors > 0 ? todayVisitors : 0;
-    document.getElementById('anTotalVisitors').textContent = totalVisitors > 0 ? totalVisitors : 0;
-    // ---------------------------------
+    document.getElementById('anTodayPlays').textContent = todayPlays;
+    document.getElementById('anWeeklyPlays').textContent = weeklyPlays;
+    document.getElementById('anMonthlyPlays').textContent = monthlyPlays;
+    // --------------------------------------------------------
 
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('analyticsContent').style.display = 'block';
