@@ -25,7 +25,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none !important}   /* the HTML hidden attribute must always win over rules like .footer-col a{display:block} */
 html,body{height:100%}
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:70px;
+}
 body{
   font-family:var(--font);
   background:var(--bg);
@@ -274,7 +277,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     align-items:start;
     padding:0 16px;
   }
-  .quiz-layout > .quiz-shell{margin:30px 0}   /* the 760px column already centres it */
+  .quiz-layout > .quiz-shell{margin:30px 0; overflow:hidden;}   /* the 760px column already centres it */
   .ad-rail{
     display:block;
     position:sticky;top:90px;                 /* stays in view under the sticky header while scrolling */
