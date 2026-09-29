@@ -38,17 +38,16 @@
 
     <div id="analyticsContent" style="display:none">
       <div class="stat-grid">
-        <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
         <div class="stat-card"><span>Daily Plays</span><b id="anTodayPlays">0</b></div>
         <div class="stat-card"><span>Monthly Plays</span><b id="anMonthlyPlays">0</b></div>
-        <div class="stat-card"><span>Total Users</span><b id="anUniquePlayers">0</b></div>
-        <div class="stat-card"><span>Daily Users</span><b id="anTodayUsers">0</b></div>
-        <div class="stat-card"><span>Monthly Users</span><b id="anMonthlyUsers">0</b></div>
+        <div class="stat-card"><span>Total Plays</span><b id="anTotalPlays">0</b></div>
         <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
         <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
-        <div class="stat-card"><span>Today's Visitors</span><b id="anTodayVisitors">0</b></div>
-        <div class="stat-card"><span>Total Visitors</span><b id="anTotalVisitors">0</b></div>
-        
+        <div class="stat-card"><span>Daily Users</span><b id="anTodayUsers">0</b></div>
+        <div class="stat-card"><span>Monthly Users</span><b id="anMonthlyUsers">0</b></div>
+        <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
+        <div class="stat-card"><span>Daily Traffic</span><b id="anTodayVisitors">0</b></div>
+        <div class="stat-card"><span>Total Traffic</span><b id="anTotalVisitors">0</b></div>
       </div>
 
       <div class="admin-card">
@@ -125,14 +124,28 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('anTodayPlays').textContent = todayPlays;
     document.getElementById('anMonthlyPlays').textContent = monthlyPlays;
 
-    // --- NEW VISITOR METRICS LOGIC ---
-    // If your user documents track a 'lastActive' or 'lastLogin' field, or if you use a 'visitors' collection, 
-    // compute them here. Fallback simulation/mapping shown using user data and session metrics:
-    let todayVisitors = users.filter(u => (u.lastActive || u.joined || '').startsWith(todayStr)).length;
-    let totalVisitors = users.length; // Or distinct visitor sessions/IP logs if tracked in DB
+    // --- NEW VISITOR METRICS LOGIC (Non-User Site Traffic) ---
+    let todayVisitors = 0;
+    let totalVisitors = 0;
+    
+    try {
+      // Calling Firestore directly to avoid editing db.js
+      const db = firebase.firestore();
+      const visitorsSnap = await db.collection('visitors').get();
+      totalVisitors = visitorsSnap.size;
+      
+      visitorsSnap.forEach(doc => {
+        const v = doc.data();
+        if ((v.date || '').startsWith(todayStr)) {
+          todayVisitors++;
+        }
+      });
+    } catch(err) {
+      console.warn("Visitors collection missing or inaccessible:", err);
+    }
 
-    document.getElementById('anTodayVisitors').textContent = todayVisitors;
-    document.getElementById('anTotalVisitors').textContent = totalVisitors;
+    document.getElementById('anTodayVisitors').textContent = totalVisitors > 0 ? todayVisitors : 0;
+    document.getElementById('anTotalVisitors').textContent = totalVisitors > 0 ? totalVisitors : 0;
     // ---------------------------------
 
     document.getElementById('loadingState').style.display = 'none';
