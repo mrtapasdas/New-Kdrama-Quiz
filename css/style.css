@@ -67,20 +67,19 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .btn-danger:hover{background:#c74338}
 
 /* ===================== HEADER ===================== */
-.site-header{
-  /* Add these 4 lines to make it stay at the top */
+.site-header {
   position: sticky;
   top: 0;
   z-index: 1000; 
-  background-color: #ffffff; /* IMPORTANT: Replace with your actual header color */
-  
-  /* Optional: Adds a subtle shadow so it stands out from the text scrolling underneath */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  
-  /* Keep whatever other properties you already have below... */
   width: 100%;
-  background:rgba(8,8,8,.95);backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--border);
+  
+  /* Your Black & Gold Theme Background */
+  background: rgba(8, 8, 8, 0.95);
+  backdrop-filter: blur(8px);
+  
+  /* Border and Theme Shadow */
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow); 
 }
 .header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-serif);font-weight:700;color:var(--accent);min-width:0;flex-shrink:1}
