@@ -68,7 +68,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 /* ===================== HEADER ===================== */
 .site-header{
-  position:sticky;top:0;z-index:100;
+  /* Add these 4 lines to make it stay at the top */
+  position: sticky;
+  top: 0;
+  z-index: 1000; 
+  background-color: #ffffff; /* IMPORTANT: Replace with your actual header color */
+  
+  /* Optional: Adds a subtle shadow so it stands out from the text scrolling underneath */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  
+  /* Keep whatever other properties you already have below... */
+  width: 100%;
   background:rgba(8,8,8,.95);backdrop-filter:blur(8px);
   border-bottom:1px solid var(--border);
 }
