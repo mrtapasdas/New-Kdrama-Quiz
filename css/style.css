@@ -549,6 +549,14 @@ canvas{max-width:100%}
   .hero{padding:60px 16px 70px}
   .hero-stats{gap:24px}
   .footer-grid{grid-template-columns:1fr}
+  .btn-whatsapp {
+    width: 100%;
+    white-space: normal;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: center;
+  }
 }
 @media (max-width:520px){
   .quiz-panel{padding:22px}
