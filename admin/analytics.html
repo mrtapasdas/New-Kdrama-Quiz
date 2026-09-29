@@ -46,8 +46,8 @@
         <div class="stat-card"><span>Monthly Users</span><b id="anMonthlyUsers">0</b></div>
         <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
         <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
-        
-        
+        <div class="stat-card"><span>Today's Visitors</span><b id="anTodayVisitors">0</b></div>
+        <div class="stat-card"><span>Total Visitors</span><b id="anTotalVisitors">0</b></div>
         
       </div>
 
@@ -102,10 +102,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
 
-    // --- NEW LOGIC: Calculate Today and Monthly Metrics ---
     const now = new Date();
-    const todayStr = now.toISOString().slice(0,10); // Format: YYYY-MM-DD
-    const monthStr = now.toISOString().slice(0,7);  // Format: YYYY-MM
+    const todayStr = now.toISOString().slice(0,10);
+    const monthStr = now.toISOString().slice(0,7);
 
     let todayUsers = 0, monthlyUsers = 0;
     users.forEach(u => {
@@ -125,7 +124,16 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('anMonthlyUsers').textContent = monthlyUsers;
     document.getElementById('anTodayPlays').textContent = todayPlays;
     document.getElementById('anMonthlyPlays').textContent = monthlyPlays;
-    // --------------------------------------------------------
+
+    // --- NEW VISITOR METRICS LOGIC ---
+    // If your user documents track a 'lastActive' or 'lastLogin' field, or if you use a 'visitors' collection, 
+    // compute them here. Fallback simulation/mapping shown using user data and session metrics:
+    let todayVisitors = users.filter(u => (u.lastActive || u.joined || '').startsWith(todayStr)).length;
+    let totalVisitors = users.length; // Or distinct visitor sessions/IP logs if tracked in DB
+
+    document.getElementById('anTodayVisitors').textContent = todayVisitors;
+    document.getElementById('anTotalVisitors').textContent = totalVisitors;
+    // ---------------------------------
 
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('analyticsContent').style.display = 'block';
