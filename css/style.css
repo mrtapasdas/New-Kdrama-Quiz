@@ -257,8 +257,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .quiz-layout{flex:1 0 auto}
 .quiz-layout > .quiz-shell{flex:none}
 .ad-rail{display:none}                        /* rails only exist on wide screens */
+.ad-mobile-top {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
 @media (min-width:1180px){
-  .quiz-layout{
+  .ad-mobile-top {
+    display: none;
+  }
+   .quiz-layout{
     display:grid;
     grid-template-columns:160px minmax(0,760px) 160px;
     justify-content:center;
