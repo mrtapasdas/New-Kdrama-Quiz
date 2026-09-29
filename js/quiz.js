@@ -119,19 +119,30 @@ function selectAnswer(index){
   clearInterval(TIMER);
   const q = CURRENT_QUIZ.questions[CURRENT_INDEX];
   const buttons = document.querySelectorAll('.option-btn');
-  buttons.forEach(b=>b.classList.add('disabled'));
   
-  if(index === q.answer){
-    buttons[index].classList.add('correct');
-    SCORE += 10 + Math.max(0, Math.floor(TIME_LEFT*2));
-  } else {
-    if(index>=0 && buttons[index]) buttons[index].classList.add('wrong');
-    if(buttons[q.answer]) buttons[q.answer].classList.add('correct');
+  // Disable all buttons so they can't click twice
+  buttons.forEach(b => b.classList.add('disabled'));
+  
+  // Give neutral visual feedback so they know their tap registered
+  if(index >= 0 && buttons[index]) {
+    buttons[index].classList.add('selected'); 
   }
+  
+  // Silently calculate the score in the background
+  if(index === q.answer){
+    SCORE += 10 + Math.max(0, Math.floor(TIME_LEFT*2));
+  }
+  
+  // Move to the next question slightly faster (800ms instead of 1200ms) 
+  // since they don't need time to review the right/wrong answer
   setTimeout(()=>{
     CURRENT_INDEX++;
-    if(CURRENT_INDEX < CURRENT_QUIZ.questions.length){ loadQuestion(); } else { finishQuiz(); }
-  }, 1200);
+    if(CURRENT_INDEX < CURRENT_QUIZ.questions.length){ 
+      loadQuestion(); 
+    } else { 
+      finishQuiz(); 
+    }
+  }, 800); 
 }
 
 async function finishQuiz(){
