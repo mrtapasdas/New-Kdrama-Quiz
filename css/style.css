@@ -24,7 +24,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none !important}   /* the HTML hidden attribute must always win over rules like .footer-col a{display:block} */
-html,body{height:100%}
+html,body{min-height:100%}
 html{
   scroll-behavior:smooth;
   scroll-padding-top:70px;
@@ -67,19 +67,20 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .btn-danger:hover{background:#c74338}
 
 /* ===================== HEADER ===================== */
-.site-header {
+/* 1. Make the outer container sticky */
+#site-header {
   position: sticky;
   top: 0;
-  z-index: 1000; 
+  z-index: 1000;
+}
+
+/* 2. Keep your colors and blur on the inner header */
+.site-header {
   width: 100%;
-  
-  /* Your Black & Gold Theme Background */
   background: rgba(8, 8, 8, 0.95);
   backdrop-filter: blur(8px);
-  
-  /* Border and Theme Shadow */
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow); 
+  box-shadow: var(--shadow);
 }
 .header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-serif);font-weight:700;color:var(--accent);min-width:0;flex-shrink:1}
