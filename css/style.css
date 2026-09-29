@@ -256,7 +256,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* ---------- Quiz page layout: [ad rail] [quiz] [ad rail] on desktop ---------- */
 .quiz-layout{flex:1 0 auto}
 .quiz-layout > .quiz-shell{flex:none}
-.quiz-layout > .ad-below{margin:24px 20px 32px}      /* phones/tablets: keep the below-quiz ad off the screen edges */
 .ad-rail{display:none}                        /* rails only exist on wide screens */
 @media (min-width:1180px){
   .quiz-layout{
@@ -276,7 +275,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   }
   .ad-rail .ad-label{display:block;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
   .ad-rail ins{max-width:100%}
-  .quiz-layout > .ad-below{display:none}      /* no below-quiz ad on desktop */
 }
 
 .quiz-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:36px;text-align:center}
