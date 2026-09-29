@@ -42,6 +42,12 @@
         <div class="stat-card"><span>Unique Players</span><b id="anUniquePlayers">0</b></div>
         <div class="stat-card"><span>Completion Rate</span><b id="anCompletion">100%</b></div>
         <div class="stat-card"><span>Top Category</span><b id="anTopCategory">—</b></div>
+        
+        <!-- NEW METRICS -->
+        <div class="stat-card"><span>Today's Users</span><b id="anTodayUsers">0</b></div>
+        <div class="stat-card"><span>Monthly Users</span><b id="anMonthlyUsers">0</b></div>
+        <div class="stat-card"><span>Daily Plays</span><b id="anTodayPlays">0</b></div>
+        <div class="stat-card"><span>Monthly Plays</span><b id="anMonthlyPlays">0</b></div>
       </div>
 
       <div class="admin-card">
@@ -94,6 +100,31 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     });
     const topCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('anTopCategory').textContent = topCat ? topCat[0] : '—';
+
+    // --- NEW LOGIC: Calculate Today and Monthly Metrics ---
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0,10); // Format: YYYY-MM-DD
+    const monthStr = now.toISOString().slice(0,7);  // Format: YYYY-MM
+
+    let todayUsers = 0, monthlyUsers = 0;
+    users.forEach(u => {
+      const joinDate = u.joined || '';
+      if (joinDate.startsWith(todayStr)) todayUsers++;
+      if (joinDate.startsWith(monthStr)) monthlyUsers++;
+    });
+
+    let todayPlays = 0, monthlyPlays = 0;
+    scores.forEach(s => {
+      const playDate = s.date || '';
+      if (playDate.startsWith(todayStr)) todayPlays++;
+      if (playDate.startsWith(monthStr)) monthlyPlays++;
+    });
+
+    document.getElementById('anTodayUsers').textContent = todayUsers;
+    document.getElementById('anMonthlyUsers').textContent = monthlyUsers;
+    document.getElementById('anTodayPlays').textContent = todayPlays;
+    document.getElementById('anMonthlyPlays').textContent = monthlyPlays;
+    // --------------------------------------------------------
 
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('analyticsContent').style.display = 'block';
