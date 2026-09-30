@@ -193,7 +193,7 @@ async function loadRelatedQuizzes(currentQuizId) {
     // Remove the current quiz from the list and shuffle the array
     const filteredQuizzes = allQuizzes.filter(q => q.id !== currentQuizId);
     const shuffled = filteredQuizzes.sort(() => 0.5 - Math.random());
-    const related = shuffled.slice(0, 3); // Grab 3 quizzes
+    const related = shuffled.slice(0, 6); // Grab 6 quizzes
 
     if (related.length === 0) {
       grid.innerHTML = '<p class="empty-state">More quizzes coming soon!</p>';
