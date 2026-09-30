@@ -205,7 +205,27 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .category-chip.active{background:var(--accent);color:#000;border-color:var(--accent)}
 
 /* Quiz grid */
-.quiz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:24px}
+/* ===================== QUIZ GRID (Responsive Fix) ===================== */
+.quiz-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+  .quiz-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .quiz-grid {
+    grid-template-columns: 1fr;
+  }
+  .quiz-thumb {
+    aspect-ratio: 16/9;
+  }
+}
 .quiz-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
   display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s,border-color .2s}
 .quiz-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--accent)}
