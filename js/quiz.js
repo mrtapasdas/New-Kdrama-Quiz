@@ -187,8 +187,8 @@ async function loadRelatedQuizzes(currentQuizId) {
     const grid = document.getElementById('relatedQuizzesGrid');
     if (!grid) return;
 
-    // Assuming you have a function like this in db.js that gets all quizzes for your homepage
-    const allQuizzes = await DB.getAllQuizzes(); 
+    // FIX 1: Changed DB.getAllQuizzes() to DB.getQuizzes() to match db.js
+    const allQuizzes = await DB.getQuizzes(); 
     
     // Remove the current quiz from the list and shuffle the array
     const filteredQuizzes = allQuizzes.filter(q => q.id !== currentQuizId);
@@ -200,19 +200,19 @@ async function loadRelatedQuizzes(currentQuizId) {
       return;
     }
 
-    // Render them using your existing quiz-card HTML structure
+    // FIX 2: Changed q.image to q.thumbnail to match your db.js normalizeQuiz() output
     grid.innerHTML = related.map(q => `
       <a href="quiz.html?id=${q.id}" class="quiz-card">
         <div class="quiz-thumb">
           <span class="tag">${escapeHtml(q.category || 'Trivia')}</span>
-          <img src="${escapeHtml(q.image || 'images/default-thumb.jpg')}" alt="${escapeHtml(q.title)}">
+          <img src="${escapeHtml(q.thumbnail)}" alt="${escapeHtml(q.title)}">
         </div>
         <div class="quiz-body">
           <h3>${escapeHtml(q.title)}</h3>
           <p>${escapeHtml(q.description)}</p>
           <div class="quiz-meta">
             <span>💬 ${q.questions ? q.questions.length : 0} Qs</span>
-            <span>⏱ ${q.timePerQuestion || 15}s</span>
+            <span>⏱ ${q.timePerQuestion || 20}s</span>
           </div>
         </div>
       </a>
