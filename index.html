@@ -78,6 +78,18 @@
 ]
 </script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- 1. Firebase Libraries (with defer) -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- 2. Your Custom Scripts (with defer) -->
+<script defer src="js/firebase-config.js"></script>
+<script defer src="js/utils.js"></script>
+<script defer src="js/db.js"></script>
+<script defer src="js/auth.js"></script>
+<script defer src="js/layout.js"></script>
+<script defer src="js/main.js"></script>
 </head>
 <body>
 <noscript>
@@ -85,13 +97,6 @@
     <strong>JavaScript is disabled!</strong> You need to enable JavaScript to play our K-Drama quizzes and view the leaderboard.
   </div>
 </noscript>
-  
-<script defer src="js/firebase-config.js"></script>
-<script defer src="js/utils.js"></script>
-<script defer src="js/db.js"></script>
-<script defer src="js/auth.js"></script>
-<script defer src="js/layout.js"></script>
-<script defer src="js/main.js"></script>
   
 <div id="site-header"></div>
 
@@ -240,9 +245,5 @@
 </main>
 
 <div id="site-footer"></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </body>
 </html>
