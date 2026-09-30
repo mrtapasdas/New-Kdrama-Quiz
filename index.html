@@ -31,6 +31,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
+<!-- Added Loading Animation CSS -->
+<style>
+  #quizLoader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    width: 100%;
+  }
+  #quizLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 71, 87, 0.2);
+    border-top-color: #ff4757; /* Matches the theme accent color */
+    border-radius: 50%;
+    animation: spin-loader 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  #quizLoader p {
+    color: #ff4757;
+    font-weight: 600;
+    font-family: 'Playfair Display', serif;
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  @keyframes spin-loader {
+    to { transform: rotate(360deg); }
+  }
+</style>
+<!-- End of Loading Animation CSS -->
+
 <!-- SEO: Combined WebSite Schema with highly-effective FAQPage Schema for Rich Snippets -->
 <script type="application/ld+json">
 [
@@ -139,6 +172,37 @@
         <p>Pick a category or scroll through everything we've got.</p>
       </div>
       <div class="category-bar" id="categoryBar"></div>
+      
+      <!-- Added Loading Animation HTML & Observer Script -->
+      <div id="quizLoader">
+        <div class="spinner"></div>
+        <p>Loading Quizzes...</p>
+      </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const grid = document.getElementById('quizGrid');
+          const loader = document.getElementById('quizLoader');
+          
+          if(grid && loader) {
+            // Hides the loader as soon as JavaScript injects quizzes into the grid
+            const observer = new MutationObserver(function(mutations) {
+              if(grid.childElementCount > 0) {
+                loader.style.display = 'none';
+                observer.disconnect();
+              }
+            });
+            
+            observer.observe(grid, { childList: true, subtree: true });
+            
+            // Fallback in case JS loads super fast before observer kicks in
+            if(grid.childElementCount > 0) {
+              loader.style.display = 'none';
+            }
+          }
+        });
+      </script>
+      <!-- End of Loading Animation HTML & Observer Script -->
+
       <div class="quiz-grid" id="quizGrid"></div>
     </div>
   </section>
